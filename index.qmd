@@ -1,1 +1,19 @@
 # Introduction
+Choosing a college, deciding on a major, and pursuing graduate studies are pivotal decisions that significantly shape an individual’s career trajectory and financial future. These choices determine career opportunities and influence long-term earnings potential and overall personal fulfillment. While personal interests and intellectual growth are equally valid reasons for pursuing higher education, this project focuses on understanding how these decisions translate into measurable post-graduation outcomes, specifically earnings and employment rates.
+
+With over 60% of Americans having attended college and enrollment numbers increasing annually, the relevance of exploring post-secondary employment outcomes continues to grow. Analyzing this data provides valuable insights that can help prospective students evaluate fields of study and degree levels in alignment with their career aspirations and financial goals. This analysis aims to support informed decision-making for students and families by focusing on the measurable outcomes available to us through data.
+
+For the reasons above, we have focused on this Post-Secondary Employment Outcomes topic. This project will explore the following general questions:
+
+- How do earnings differ by field of study and degree type?
+- What are the trends in earnings growth from Year 1 to Year 5 post-graduation? Year 5 to Year 10?
+- Which fields or degrees lead to the highest employment rates after graduation?
+- How do employment outcomes vary by institution or region?
+- What is the earnings gap between the 25th and 75th percentiles across fields or degrees?
+- Are graduates in specific fields or institutions more likely to stay in lower or higher earning brackets?
+- How have career prospects changed over the past decade?
+
+## References
+1. https://www.census.gov/data/tables/2018/demo/education-attainment/cps-detailed-tables.html
+2. https://nces.ed.gov/fastfacts/display.asp?id=27#:~:text=Between%202010%20and%202022%2C%20educational%20attainment%20rates%20increased%20for%20both,for%20females%20than%20for%20males.
+
