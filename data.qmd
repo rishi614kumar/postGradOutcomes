@@ -2,4 +2,47 @@
 
 ## Description
 
+For this project, we are using Post-Secondary Employment Outcomes (PSEO) datasets that contain earnings and employment outcomes for graduates.
+
+### Data Source
+We have identified the national and state-level PSEO datasets from the United States Center for Economic Studies. These data sets are publicly available [here](https://lehd.ces.census.gov/data/).
+
+### Data Collection
+The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges its admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.
+
+Further details can be found here:
+
+- https://lehd.ces.census.gov/data/pseo_documentation.html
+- https://lehd.ces.census.gov/data/pseo_experimental.html
+- https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf
+
+
+
+### Data Format
+
+We consume the data as a csv file, downloaded directly from their publicly accessible data download page. The national-level report alone contains approximately 564,000 records with 36 columns. These records cover the aggregated earnings and employment outcomes for graduates 1 year, 5 years, and 10 years after graduation (when available) based on the following identifiers:
+
+- Institution 
+- Degree Level
+- Degree Field
+- Cohort's Graduation Year
+
+Institution ID Mappings (OPEID): 
+
+- https://collegefutures.org/wp-content/uploads/2015/04/post-secondary-institutions-with-unitid.xlsx
+
+Degree Field Mappings (CIPCODE):
+
+- https://nces.ed.gov/ipeds/cipcode/browse.aspx?y=55
+
+Degree Level Mappings: 
+
+- https://nces.ed.gov/ipeds/report-your-data/data-tip-sheet-reporting-graduate-awards
+- https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf
+
+The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the [PSEO data notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf) for their updates.
+
+### Data Limitations
+There are coverage gaps in the dataset because it only includes outcomes from instutitions that have partnered with the Census Bureau through the data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found [here](https://lehd.ces.census.gov/data/pseo_experimental.html).
+
 ## Missing value analysis

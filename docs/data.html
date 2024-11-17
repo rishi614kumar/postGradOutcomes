@@ -149,7 +149,13 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description"><span class="header-section-number">2.1</span> Description</a></li>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description"><span class="header-section-number">2.1</span> Description</a>
+  <ul class="collapse">
+  <li><a href="#data-source" id="toc-data-source" class="nav-link" data-scroll-target="#data-source"><span class="header-section-number">2.1.1</span> Data Source</a></li>
+  <li><a href="#data-collection" id="toc-data-collection" class="nav-link" data-scroll-target="#data-collection"><span class="header-section-number">2.1.2</span> Data Collection</a></li>
+  <li><a href="#data-format" id="toc-data-format" class="nav-link" data-scroll-target="#data-format"><span class="header-section-number">2.1.3</span> Data Format</a></li>
+  <li><a href="#data-limitations" id="toc-data-limitations" class="nav-link" data-scroll-target="#data-limitations"><span class="header-section-number">2.1.4</span> Data Limitations</a></li>
+  </ul></li>
   <li><a href="#missing-value-analysis" id="toc-missing-value-analysis" class="nav-link" data-scroll-target="#missing-value-analysis"><span class="header-section-number">2.2</span> Missing value analysis</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/rishi614kumar/postGradOutcomes/edit/main/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/rishi614kumar/postGradOutcomes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -178,6 +184,49 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="description" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="description"><span class="header-section-number">2.1</span> Description</h2>
+<p>For this project, we are using Post-Secondary Employment Outcomes (PSEO) datasets that contain earnings and employment outcomes for graduates.</p>
+<section id="data-source" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="data-source"><span class="header-section-number">2.1.1</span> Data Source</h3>
+<p>We have identified the national and state-level PSEO datasets from the United States Center for Economic Studies. These data sets are publicly available <a href="https://lehd.ces.census.gov/data/">here</a>.</p>
+</section>
+<section id="data-collection" class="level3" data-number="2.1.2">
+<h3 data-number="2.1.2" class="anchored" data-anchor-id="data-collection"><span class="header-section-number">2.1.2</span> Data Collection</h3>
+<p>The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges its admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.</p>
+<p>Further details can be found here:</p>
+<ul>
+<li>https://lehd.ces.census.gov/data/pseo_documentation.html</li>
+<li>https://lehd.ces.census.gov/data/pseo_experimental.html</li>
+<li>https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf</li>
+</ul>
+</section>
+<section id="data-format" class="level3" data-number="2.1.3">
+<h3 data-number="2.1.3" class="anchored" data-anchor-id="data-format"><span class="header-section-number">2.1.3</span> Data Format</h3>
+<p>We consume the data as a csv file, downloaded directly from their publicly accessible data download page. The national-level report alone contains approximately 564,000 records with 36 columns. These records cover the aggregated earnings and employment outcomes for graduates 1 year, 5 years, and 10 years after graduation (when available) based on the following identifiers:</p>
+<ul>
+<li>Institution</li>
+<li>Degree Level</li>
+<li>Degree Field</li>
+<li>Cohort’s Graduation Year</li>
+</ul>
+<p>Institution ID Mappings (OPEID):</p>
+<ul>
+<li>https://collegefutures.org/wp-content/uploads/2015/04/post-secondary-institutions-with-unitid.xlsx</li>
+</ul>
+<p>Degree Field Mappings (CIPCODE):</p>
+<ul>
+<li>https://nces.ed.gov/ipeds/cipcode/browse.aspx?y=55</li>
+</ul>
+<p>Degree Level Mappings:</p>
+<ul>
+<li>https://nces.ed.gov/ipeds/report-your-data/data-tip-sheet-reporting-graduate-awards</li>
+<li>https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf</li>
+</ul>
+<p>The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the <a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO data notices</a> for their updates.</p>
+</section>
+<section id="data-limitations" class="level3" data-number="2.1.4">
+<h3 data-number="2.1.4" class="anchored" data-anchor-id="data-limitations"><span class="header-section-number">2.1.4</span> Data Limitations</h3>
+<p>There are coverage gaps in the dataset because it only includes outcomes from instutitions that have partnered with the Census Bureau through the data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">here</a>.</p>
+</section>
 </section>
 <section id="missing-value-analysis" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="missing-value-analysis"><span class="header-section-number">2.2</span> Missing value analysis</h2>
