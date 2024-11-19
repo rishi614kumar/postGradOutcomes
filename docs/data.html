@@ -154,7 +154,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#data-source" id="toc-data-source" class="nav-link" data-scroll-target="#data-source"><span class="header-section-number">2.1.1</span> Data Source</a></li>
   <li><a href="#data-collection" id="toc-data-collection" class="nav-link" data-scroll-target="#data-collection"><span class="header-section-number">2.1.2</span> Data Collection</a></li>
   <li><a href="#data-format" id="toc-data-format" class="nav-link" data-scroll-target="#data-format"><span class="header-section-number">2.1.3</span> Data Format</a></li>
-  <li><a href="#data-limitations" id="toc-data-limitations" class="nav-link" data-scroll-target="#data-limitations"><span class="header-section-number">2.1.4</span> Data Limitations</a></li>
+  <li><a href="#data-coverage" id="toc-data-coverage" class="nav-link" data-scroll-target="#data-coverage"><span class="header-section-number">2.1.4</span> Data Coverage</a></li>
+  <li><a href="#data-referencesdocumentation" id="toc-data-referencesdocumentation" class="nav-link" data-scroll-target="#data-referencesdocumentation"><span class="header-section-number">2.1.5</span> Data References/Documentation</a></li>
   </ul></li>
   <li><a href="#missing-value-analysis" id="toc-missing-value-analysis" class="nav-link" data-scroll-target="#missing-value-analysis"><span class="header-section-number">2.2</span> Missing value analysis</a></li>
   </ul>
@@ -187,45 +188,62 @@ ul.task-list li input[type="checkbox"] {
 <p>For this project, we are using Post-Secondary Employment Outcomes (PSEO) datasets that contain earnings and employment outcomes for graduates.</p>
 <section id="data-source" class="level3" data-number="2.1.1">
 <h3 data-number="2.1.1" class="anchored" data-anchor-id="data-source"><span class="header-section-number">2.1.1</span> Data Source</h3>
-<p>We have identified the national and state-level PSEO datasets from the United States Center for Economic Studies. These data sets are publicly available <a href="https://lehd.ces.census.gov/data/">here</a>.</p>
+<p>The national and state-level PSEO datasets are publicly available through the <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">United States Center for Economic Studies</a>. Specifically, we are using the <strong>PSEOE (earnings)</strong> and <strong>PSEOF (employment rates)</strong> files from the PSEO section.</p>
 </section>
 <section id="data-collection" class="level3" data-number="2.1.2">
 <h3 data-number="2.1.2" class="anchored" data-anchor-id="data-collection"><span class="header-section-number">2.1.2</span> Data Collection</h3>
-<p>The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges its admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.</p>
-<p>Further details can be found here:</p>
-<ul>
-<li>https://lehd.ces.census.gov/data/pseo_documentation.html</li>
-<li>https://lehd.ces.census.gov/data/pseo_experimental.html</li>
-<li>https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf</li>
-</ul>
+<p>The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.</p>
 </section>
 <section id="data-format" class="level3" data-number="2.1.3">
 <h3 data-number="2.1.3" class="anchored" data-anchor-id="data-format"><span class="header-section-number">2.1.3</span> Data Format</h3>
-<p>We consume the data as a csv file, downloaded directly from their publicly accessible data download page. The national-level report alone contains approximately 564,000 records with 36 columns. These records cover the aggregated earnings and employment outcomes for graduates 1 year, 5 years, and 10 years after graduation (when available) based on the following identifiers:</p>
+<p>We are working with CSV files downloaded directly from the public data access page. The national-level datasets contains approximately <strong>564,000 records and 36 columns</strong>, covering aggregated <strong>earnings and employment outcomes</strong> for graduates <strong>1 year, 5 years, and 10 years post-graduation</strong> (when available). The main identifiers in the dataset include:</p>
 <ul>
-<li>Institution</li>
-<li>Degree Level</li>
-<li>Degree Field</li>
-<li>Cohort’s Graduation Year</li>
+<li><strong>Institution</strong><br>
+</li>
+<li><strong>Degree Level</strong><br>
+</li>
+<li><strong>Degree Field</strong><br>
+</li>
+<li><strong>Cohort Graduation Year</strong></li>
 </ul>
-<p>Institution ID Mappings (OPEID):</p>
+<section id="mappings-for-identifiers" class="level4" data-number="2.1.3.1">
+<h4 data-number="2.1.3.1" class="anchored" data-anchor-id="mappings-for-identifiers"><span class="header-section-number">2.1.3.1</span> Mappings for Identifiers:</h4>
+<p>Please note that we enrich this data for visualization and analysis by mapping ID values to string values using external sources.</p>
 <ul>
-<li>https://collegefutures.org/wp-content/uploads/2015/04/post-secondary-institutions-with-unitid.xlsx</li>
+<li><strong>Institution (OPEID):</strong> <a href="https://collegefutures.org/wp-content/uploads/2015/04/post-secondary-institutions-with-unitid.xlsx">Post-Secondary Institutions with OPEID</a><br>
+</li>
+<li><strong>Degree Field (CIPCODE):</strong> <a href="https://nces.ed.gov/ipeds/cipcode/browse.aspx?y=55">CIP Code Table</a><br>
+</li>
+<li><strong>Degree Level:</strong> <a href="https://nces.ed.gov/ipeds/report-your-data/data-tip-sheet-reporting-graduate-awards">NCES Degree Level Classifcations</a> | <a href="https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf">PSEO Technical Documentation</a></li>
 </ul>
-<p>Degree Field Mappings (CIPCODE):</p>
-<ul>
-<li>https://nces.ed.gov/ipeds/cipcode/browse.aspx?y=55</li>
-</ul>
-<p>Degree Level Mappings:</p>
-<ul>
-<li>https://nces.ed.gov/ipeds/report-your-data/data-tip-sheet-reporting-graduate-awards</li>
-<li>https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf</li>
-</ul>
-<p>The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the <a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO data notices</a> for their updates.</p>
 </section>
-<section id="data-limitations" class="level3" data-number="2.1.4">
-<h3 data-number="2.1.4" class="anchored" data-anchor-id="data-limitations"><span class="header-section-number">2.1.4</span> Data Limitations</h3>
-<p>There are coverage gaps in the dataset because it only includes outcomes from instutitions that have partnered with the Census Bureau through the data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">here</a>.</p>
+</section>
+<section id="data-coverage" class="level3" data-number="2.1.4">
+<h3 data-number="2.1.4" class="anchored" data-anchor-id="data-coverage"><span class="header-section-number">2.1.4</span> Data Coverage</h3>
+<p>The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the <a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO data notices</a> for their updates.</p>
+<p><strong>Limitations</strong>: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through the data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">here</a>.</p>
+</section>
+<section id="data-referencesdocumentation" class="level3" data-number="2.1.5">
+<h3 data-number="2.1.5" class="anchored" data-anchor-id="data-referencesdocumentation"><span class="header-section-number">2.1.5</span> Data References/Documentation</h3>
+<p>For more details on the above, see the follow resources:</p>
+<section id="pseo-data" class="level4" data-number="2.1.5.1">
+<h4 data-number="2.1.5.1" class="anchored" data-anchor-id="pseo-data"><span class="header-section-number">2.1.5.1</span> <strong>PSEO Data:</strong></h4>
+<ul>
+<li><a href="https://lehd.ces.census.gov/data/pseo_experimental.html">PSEO Data</a> (Data Download &amp; Coverage Stats)</li>
+<li><a href="https://lehd.ces.census.gov/data/pseo_documentation.html">PSEO Documentation</a> (High Level Summary)</li>
+<li><a href="https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf">PSEO Technical Documentation</a> (Technical Details, Data Collection, Rationale)</li>
+<li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo">PSEO Schema</a> (4.25, 4.36, 4.37)</li>
+<li><a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO Data Notices</a></li>
+</ul>
+</section>
+<section id="mapping-data" class="level4" data-number="2.1.5.2">
+<h4 data-number="2.1.5.2" class="anchored" data-anchor-id="mapping-data"><span class="header-section-number">2.1.5.2</span> <strong>Mapping Data</strong></h4>
+<ul>
+<li><a href="https://collegefutures.org/wp-content/uploads/2015/04/post-secondary-institutions-with-unitid.xlsx">Post-Secondary Institutions with OPEID</a></li>
+<li><a href="https://nces.ed.gov/ipeds/cipcode/browse.aspx?y=55">CIP Code Table</a></li>
+<li><a href="https://nces.ed.gov/ipeds/report-your-data/data-tip-sheet-reporting-graduate-awards">NCES Degree Level Classifcations</a></li>
+</ul>
+</section>
 </section>
 </section>
 <section id="missing-value-analysis" class="level2" data-number="2.2">
