@@ -5,28 +5,29 @@
 For this project, we are using Post-Secondary Employment Outcomes (PSEO) datasets that contain earnings and employment outcomes for graduates.
 
 ### Data Source
-The national and state-level PSEO datasets are publicly available through the [United States Center for Economic Studies](https://lehd.ces.census.gov/data/pseo_experimental.html). Specifically, we are using the **PSEOE (earnings)** and **PSEOF (employment rates)** files from the PSEO section.
+
+The national and state-level PSEO datasets are publicly available through the [United States Center for Economic Studies](https://lehd.ces.census.gov/data/pseo_experimental.html). Specifically, we are using the **PSEOE** files from the PSEO section.
 
 ### Data Collection
+
 The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.
 
 ### Data Format
 
-We are working with CSV files downloaded directly from the public data access page. The national-level datasets contains approximately **564,000 records and 36 columns**, covering aggregated **earnings and employment outcomes** for graduates **1 year, 5 years, and 10 years post-graduation** (when available). The main identifiers in the dataset include:  
+We are working with CSV files downloaded directly from the public data access page. The national-level datasets contains approximately **564,000 records and 36 columns**, covering aggregated **earnings and employment outcomes** for graduates **1 year, 5 years, and 10 years post-graduation** (when available).
 
-- **Institution**  
-- **Degree Level**  
-- **Degree Field**  
-- **Cohort Graduation Year**  
+Note that there are three types of columns in the PSEO datasets:
 
+-   ID: unique identifiers for each group
+-   Data: provides earning and employment information about the given group
+-   Status: provides information about the "quality" of an observation in its respective data column
 
-#### Mappings for Identifiers:
+The main identifiers in the dataset that we will use in our analysis includes:
 
-Please note that we enrich this data for visualization and analysis by mapping ID values to string values using external sources.
-
-- **Institution (OPEID):** [Post-Secondary Institutions with OPEID](https://collegefutures.org/wp-content/uploads/2015/04/post-secondary-institutions-with-unitid.xlsx)  
-- **Degree Field (CIPCODE):** [CIP Code Table](https://nces.ed.gov/ipeds/cipcode/browse.aspx?y=55)  
-- **Degree Level:** [NCES Degree Level Classifcations](https://nces.ed.gov/ipeds/report-your-data/data-tip-sheet-reporting-graduate-awards) | [PSEO Technical Documentation](https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf)  
+-   **Institution**
+-   **Degree Level**
+-   **Degree Field**
+-   **Cohort Graduation Year**
 
 ### Data Coverage
 
@@ -35,21 +36,16 @@ The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data 
 **Limitations**: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through the data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found [here](https://lehd.ces.census.gov/data/pseo_experimental.html).
 
 ### Data References/Documentation
+
 For more details on the above, see the follow resources:
 
-#### **PSEO Data:**
-
-- [PSEO Data](https://lehd.ces.census.gov/data/pseo_experimental.html) (Data Download & Coverage Stats)
-- [PSEO Documentation](https://lehd.ces.census.gov/data/pseo_documentation.html) (High Level Summary)
-- [PSEO Technical Documentation](https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf) (Technical Details, Data Collection, Rationale)
-- [PSEO Schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo) (4.25, 4.36, 4.37)
-- [PSEO Data Notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf)
-
-#### **Mapping Data**
-
+-   [PSEO Data](https://lehd.ces.census.gov/data/pseo_experimental.html) (Data Download & Coverage Stats)
+-   [PSEO Documentation](https://lehd.ces.census.gov/data/pseo_documentation.html) (High Level Summary)
+-   [PSEO Technical Documentation](https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf) (Technical Details, Data Collection, Rationale)
+-   [PSEO Schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo) (4.25, 4.36, 4.37)
+-   [PSEO Data Notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf)
 
 ## Missing value analysis
-
 
 ```{r}
 suppressPackageStartupMessages(library(tidyverse))
@@ -60,8 +56,6 @@ pseoe <- read_csv("data/pseoe_all.csv", show_col_types = FALSE)
 #head(pseof)
 
 ```
-
-
 
 When looking at the missing values in the dataset, we see that they only appear in the data-columns. The id and status columns contain no missing values.
 
@@ -102,28 +96,28 @@ colnames(pseoe_missing) <- colnames(pseoe_missing) %>%
 
 suppressMessages(suppressWarnings(plot_missing(pseoe_missing)))
 ```
-The first thing that can be observed from this plot is that the year 10 earnings columns (y10_p25, y10_p50, y10_p75) contain the most missing values and are missing about 75% of the time. The year 5 earnings columns are missing about 60 percent of the time, and the year 1 earnings columns about 50%. When looking at the missing patterns, we also see that the earnings columns for a given year are always missing together, i.e. if one percentile is missing the others are also missing. Furthermore, the columns ending with "_emp", indicating the amount of employed graduates for the given year, is also always missing together with the corresponding earnings columns. Lastly, the columns ending in "_tot", indicating the total amount of graduates for which the earnings percentiles are calculated for the given group and year, are always missing less often than the corresponding earnings columns.
+
+The first thing that can be observed from this plot is that the year 10 earnings columns (y10_p25, y10_p50, y10_p75) contain the most missing values and are missing about 75% of the time. The year 5 earnings columns are missing about 60 percent of the time, and the year 1 earnings columns about 50%. When looking at the missing patterns, we also see that the earnings columns for a given year are always missing together, i.e. if one percentile is missing the others are also missing. Furthermore, the columns ending with "\_emp", indicating the amount of employed graduates for the given year, is also always missing together with the corresponding earnings columns. Lastly, the columns ending in "\_tot", indicating the total amount of graduates for which the earnings percentiles are calculated for the given group and year, are always missing less often than the corresponding earnings columns.
 
 The next thing that we can take into account is that the dataset gives us information about the data present in the data-columns through the status-columns. Concretely, the status columns contain one of the values shown in the following table:
 
-| Status code | Description                                                                                 |
-|------|---------------------------------------------------------------------------------------------|
-| -2   | no data available in this category for this quarter                                         |
-| -1   | data not available to compute this estimate                                                 |
-| 1    | OK                                                                                          |
-| 2    | IPEDS counts edited for consistency with PSEO categories                                    |
-| 3    | IPEDS counts not available                                                                  |
-| 4    | IPEDS counts partially missing                                                              |
-| 5    | Value suppressed because it does not meet US Census Bureau publication standards.           |
-| 6    | Value calculated from other released measures - no significant distortion                   |
-| 7    | Value calculated from other released measures - some of which have significantly distorted data |
-| 9    | Data significantly distorted - fuzzed value released                                        |
-| 10   | Aggregate of cells - no significant distortion                                              |
-| 11   | Aggregate of cells not released because component cells do not meet U.S. Census Bureau publication standards |
-| 12   | Aggregate of cells - some of which have significantly distorted data                        |
+| Status code | Description |
+|------------|------------------------------------------------------------|
+| -2 | no data available in this category for this quarter |
+| -1 | data not available to compute this estimate |
+| 1 | OK |
+| 2 | IPEDS counts edited for consistency with PSEO categories |
+| 3 | IPEDS counts not available |
+| 4 | IPEDS counts partially missing |
+| 5 | Value suppressed because it does not meet US Census Bureau publication standards. |
+| 6 | Value calculated from other released measures - no significant distortion |
+| 7 | Value calculated from other released measures - some of which have significantly distorted data |
+| 9 | Data significantly distorted - fuzzed value released |
+| 10 | Aggregate of cells - no significant distortion |
+| 11 | Aggregate of cells not released because component cells do not meet U.S. Census Bureau publication standards |
+| 12 | Aggregate of cells - some of which have significantly distorted data |
 
 Looking at this table, we see that there are 5 status codes that should correspond to missing values: -1, -2, 3, 5, 11. When analyzing the dataset, we see that there is indeed a one-to-one correspondance between a missing value in a data-column and the presence of one of these codes in the corresponding status-column. This means that a value is missing if and only if this is indicated in the status-column, where this column gives us more information about the reason that the value is missing.
-
 
 ```{r}
 library(dplyr)
@@ -169,6 +163,7 @@ violations <- pseoe |>
 # assertion
 stopifnot(nrow(violations) == 0)
 ```
+
 To get a sense of the reason for missing values, we can thus look at the distribution of status codes in each of the status columns, where we only consider status codes corresponding to missing values. This is shown in the following plot.
 
 ```{r, fig.width=8, fig.height=6}
@@ -233,19 +228,5 @@ ggplot(plot_data, aes(x = status_description, y = percentage)) +
   scale_y_continuous(labels = scales::percent_format()) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
 When looking at the earnings data and the number of employed graduates, we see that this data for graduates one year after graduation is only missing because they don't meet the Census Bureau standards. However, when looking at graduates five years after graduation, this data is also often missing because it is simply not yet available. This trend continues for graduates ten years after graduation, where the most common reason for missing data is the fact that it is simply not available. This of course makes sense, as a lot of rows in the dataset correspond to cohorts that graduated less than 5 or 10 years ago. However, all cohorts graduated at least one year ago, and thus the reason for missing values one year after graduation cannot be that it is not yet available. Lastly, we see that the "total count" columns, representing the total number of graduates in the cohort, are only missing due to unavailability.
-
-
-```{r}
-#pse_join <- pseoe |>
-#  left_join(pseof)
-```
-
-```{r}
-#colnames(pseof)
-#pseof_cols_select <- c("y1_grads_nme", "y5_grads_nme", "y10_grads_nme", "status_y1_grads_nme", "status_y5_grads_nme", 
-#                       "status_y10_grads_nme")
-#pse_join <- pse_join[,c(colnames(pseoe), pseof_cols_select)]
-```
-
-
