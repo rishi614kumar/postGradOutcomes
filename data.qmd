@@ -6,7 +6,7 @@ For this project, we are using Post-Secondary Employment Outcomes (PSEO) dataset
 
 ### Data Source
 
-The national and state-level PSEO datasets are publicly available through the [United States Center for Economic Studies](https://lehd.ces.census.gov/data/pseo_experimental.html). Specifically, we are using the **PSEOE** files from the PSEO section.
+The national and state-level PSEO datasets are publicly available through the [United States Center for Economic Studies](https://lehd.ces.census.gov/data/pseo_experimental.html). Specifically, we are using the **PSEOE** files (contains salary and employment statistics) from the PSEO section.
 
 ### Data Collection
 
@@ -19,7 +19,9 @@ We are working with CSV files downloaded directly from the public data access pa
 Note that there are three types of columns in the PSEO datasets:
 
 -   ID: unique identifiers for each group
--   Data: provides earning and employment information about the given group
+-   Data: provides earning and employment information about the given group.
+    -   All outcomes are recorded 1 year, 5 years, and 10 years post-graduation when applicable
+    -   Earning outcomes are provided through the 25th, 50th, and 75th percentiles, in 2021 dollars
 -   Status: provides information about the "quality" of an observation in its respective data column
 
 The main identifiers in the dataset that we will use in our analysis includes:
@@ -33,7 +35,7 @@ The main identifiers in the dataset that we will use in our analysis includes:
 
 The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the [PSEO data notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf) for their updates.
 
-**Limitations**: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through the data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found [here](https://lehd.ces.census.gov/data/pseo_experimental.html).
+**Limitations**: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found [here](https://lehd.ces.census.gov/data/pseo_experimental.html).
 
 ### Data References/Documentation
 
@@ -57,7 +59,7 @@ pseoe <- read_csv("data/pseoe_all.csv", show_col_types = FALSE)
 
 ```
 
-When looking at the missing values in the dataset, we see that they only appear in the data-columns. The id and status columns contain no missing values.
+When looking at the missing values in the dataset, we see that they only appear in the data columns. The id and status columns contain no missing values.
 
 ```{r}
 idcols <- c(
@@ -99,10 +101,10 @@ suppressMessages(suppressWarnings(plot_missing(pseoe_missing)))
 
 The first thing that can be observed from this plot is that the year 10 earnings columns (y10_p25, y10_p50, y10_p75) contain the most missing values and are missing about 75% of the time. The year 5 earnings columns are missing about 60 percent of the time, and the year 1 earnings columns about 50%. When looking at the missing patterns, we also see that the earnings columns for a given year are always missing together, i.e. if one percentile is missing the others are also missing. Furthermore, the columns ending with "\_emp", indicating the amount of employed graduates for the given year, is also always missing together with the corresponding earnings columns. Lastly, the columns ending in "\_tot", indicating the total amount of graduates for which the earnings percentiles are calculated for the given group and year, are always missing less often than the corresponding earnings columns.
 
-The next thing that we can take into account is that the dataset gives us information about the data present in the data-columns through the status-columns. Concretely, the status columns contain one of the values shown in the following table:
+The next thing that we can take into account is that the dataset gives us information about the data present in the data-columns through the status-columns. Concretely, the status columns contain one of the values shown in the following [table](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_status_flags):
 
 | Status code | Description |
-|------------|------------------------------------------------------------|
+|----------------|--------------------------------------------------------|
 | -2 | no data available in this category for this quarter |
 | -1 | data not available to compute this estimate |
 | 1 | OK |
@@ -229,4 +231,8 @@ ggplot(plot_data, aes(x = status_description, y = percentage)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-When looking at the earnings data and the number of employed graduates, we see that this data for graduates one year after graduation is only missing because they don't meet the Census Bureau standards. However, when looking at graduates five years after graduation, this data is also often missing because it is simply not yet available. This trend continues for graduates ten years after graduation, where the most common reason for missing data is the fact that it is simply not available. This of course makes sense, as a lot of rows in the dataset correspond to cohorts that graduated less than 5 or 10 years ago. However, all cohorts graduated at least one year ago, and thus the reason for missing values one year after graduation cannot be that it is not yet available. Lastly, we see that the "total count" columns, representing the total number of graduates in the cohort, are only missing due to unavailability.
+When looking at the earnings data and the number of employed graduates, we see that this data for graduates one year after graduation is only missing because they don't meet the Census Bureau standards.
+
+However, when looking at graduates five years after graduation, this data is also often missing because it is simply not yet available. This trend continues for graduates ten years after graduation, where the most common reason for missing data is the fact that it is simply not available.
+
+This of course makes sense, as many of the rows in the dataset correspond to cohorts that graduated less than 5 or 10 years ago. However, all cohorts graduated at least one year ago, and thus the reason for missing values one year after graduation cannot be that it is not yet available. Lastly, we see that the "total count" columns, representing the total number of graduates in the cohort, are only missing due to unavailability.
