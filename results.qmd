@@ -44,3 +44,120 @@ pseoe <- pseoe |>
 ```
 
 ## How do Earnings Differ by Field of Study and Degree Type?
+
+## How have career prospects changed over the past decade?
+```{r}
+pseoe
+```
+
+
+```{r}
+idcols_inst <- c(
+  "agg_level_pseo", "inst_level", "institution", "degree_level",
+  "cip_level", "cipcode" #, "grad_cohort", "grad_cohort_years"
+)
+
+
+```
+
+```{r}
+ggplot(pseoe, aes(grad_cohort)) +
+  geom_bar()
+```
+```{r}
+ggplot(pseoe |> filter(grad_cohort== "2006"), aes(degree_level)) +
+  geom_bar()
+```
+
+
+```{r}
+pseoe_grouped_inst_sel <- pseoe |> 
+                      filter(grad_cohort == "2006" | grad_cohort == "2016") |>
+                      filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+                      group_by(across(all_of(idcols_inst))) |>
+                      filter(all(c("2006", "2016") %in% grad_cohort))
+```
+
+```{r}
+
+```
+
+
+```{r}
+pseoe_cipcode_change06to16 <- pseoe_grouped_inst_sel|>
+                              group_by(cipcode_label, grad_cohort) |>
+                              summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE)) |>
+                              ungroup() |>
+                              pivot_wider(names_from = grad_cohort, values_from = mean_med_earning, 
+                                          names_prefix ="earnings_") |> # Reshape data
+                              mutate(change_med_earning = earnings_2016 - earnings_2006) # Compute change
+```
+
+```{r}
+pseoe_cipcode_change06to16 <- pseoe_cipcode_change06to16 |>
+  arrange(change_med_earning)
+```
+
+```{r}
+pseoe_cipcode_change06to16_selected <- pseoe_cipcode_change06to16 |>
+  select(cipcode_label, change_med_earning)
+
+```
+
+
+```{r}
+
+ggplot(pseoe_cipcode_change06to16_selected[1:20, ], aes(y = factor(cipcode_label,
+                                                                   levels = cipcode_label[order(change_med_earning)]),
+                                                        x = change_med_earning)) +
+  geom_col() +
+  ylab("CIP Code Label") +
+  xlab("Change in Median Earning") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+ggplot(tail(pseoe_cipcode_change06to16_selected, 20), aes(y = factor(cipcode_label,
+                                                                   levels = cipcode_label[order(change_med_earning)]),
+                                                        x = change_med_earning)) +
+  geom_col() +
+  ylab("CIP Code Label") +
+  xlab("Change in Year 1 Median Earning") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+pseoe_typedegree_change06to16 <- pseoe_grouped_inst_sel|>
+                              group_by(degree_label, grad_cohort) |>
+                              summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE)) |>
+                              ungroup() |>
+                              pivot_wider(names_from = grad_cohort, values_from = mean_med_earning, 
+                                          names_prefix ="earnings_") |> # Reshape data
+                              mutate(change_med_earning = earnings_2016 - earnings_2006) # Compute change
+```
+```{r}
+pseoe_typedegree_change06to16 <- pseoe_typedegree_change06to16 |>
+  arrange(change_med_earning)
+
+```
+
+```{r}
+pseoe_typedegree_change06to16_sel <- pseoe_typedegree_change06to16 |>
+  select(degree_label, change_med_earning)
+
+```
+
+
+```{r}
+ggplot(pseoe_typedegree_change06to16_sel, aes(y = factor(degree_label,
+                                                                   levels = degree_label[order(change_med_earning)]),
+                                                        x = change_med_earning)) +
+  geom_col() +
+  ylab("Degree type") +
+  xlab("Change in Year 1 Median Earning") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
