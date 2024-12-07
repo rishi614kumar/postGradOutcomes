@@ -1,1 +1,46 @@
 # Results
+
+In this section, we will explore several questions about the data, separated as parts.
+
+## Preparing the Data
+
+```{r}
+library(ggplot2)
+library(dplyr)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+```{r}
+pseoe <- read_csv("data/pseoe_all.csv", show_col_types = FALSE)
+degree_mapping <- read.csv("data/label_degree_level.csv")
+cipcode_mapping <- read.csv("data/label_cipcode.csv")
+institution_mapping <- read.csv("data/label_institution.csv")
+```
+
+```{r}
+degree_mapping <- degree_mapping |>
+  mutate(degree_level = sprintf("%02d", as.integer(degree_level)))
+
+pseoe <- pseoe |>
+  left_join(degree_mapping |> select(degree_level, label), by = "degree_level") |>
+  rename(degree_label = label)
+
+cipcode_mapping$cipcode <- as.character(cipcode_mapping$cipcode)
+
+pseoe <- pseoe |>
+  left_join(cipcode_mapping |> select(cipcode, label), by = "cipcode") |>
+  rename(cipcode_label = label)
+
+pseoe <- pseoe |>
+  left_join(
+    institution_mapping |>
+      select(institution, label, city, institution_state) |>
+      rename(
+        institution_label = label,
+        institution_city = city
+      ),
+    by = "institution"
+  )
+```
+
+## How do Earnings Differ by Field of Study and Degree Type?
