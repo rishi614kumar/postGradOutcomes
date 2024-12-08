@@ -2,8 +2,6 @@
 
 In this section, we will explore several questions about the data, separated as parts.
 
-## Preparing the Data
-
 ```{r}
 library(ggplot2)
 library(dplyr)
@@ -13,93 +11,25 @@ library(ggrepel)
 library(tidyr)
 library(parcoords)
 library(htmltools)
+
+options(ggplot2.discrete.fill.warning = FALSE)
 ```
 
 ```{r}
+source("scripts/pseoe_preprocessing.R")
 pseoe <- read_csv("data/pseoe_all.csv", show_col_types = FALSE)
 degree_mapping <- read.csv("data/label_degree_level.csv")
 cipcode_mapping <- read.csv("data/label_cipcode.csv")
 institution_mapping <- read.csv("data/label_institution.csv")
+
+pseoe <- preprocess_pseoe(
+  pseoe = pseoe,
+  degree_mapping = degree_mapping,
+  cipcode_mapping = cipcode_mapping,
+  institution_mapping = institution_mapping
+)
+#cat("Rows:", nrow(pseoe), "\nColumns:", ncol(pseoe), "\n")
 ```
-
-```{r}
-degree_mapping <- degree_mapping |>
-  mutate(degree_level = sprintf("%02d", as.integer(degree_level)))
-
-pseoe <- pseoe |>
-  left_join(degree_mapping |> select(degree_level, label), by = "degree_level") |>
-  rename(degree_label = label)
-
-cipcode_mapping$cipcode <- as.character(cipcode_mapping$cipcode)
-
-pseoe <- pseoe |>
-  left_join(cipcode_mapping |> select(cipcode, label), by = "cipcode") |>
-  rename(cipcode_label = label)
-
-pseoe <- pseoe |>
-  left_join(
-    institution_mapping |>
-      select(institution, label, city, institution_state) |>
-      rename(
-        institution_label = label,
-        institution_city = city
-      ),
-    by = "institution"
-  )
-```
-```{r}
-truncate_by_words <- function(label, max_length) {
-  words <- strsplit(label, " ")[[1]]
-  cum_lengths <- cumsum(nchar(words)) + seq_along(words) - 1
-  truncated <- max(which(cum_lengths <= max_length), 0)
-  if (truncated < length(words)) {
-    return(paste0(paste(words[1:truncated], collapse = " "), "..."))
-  } else {
-    return(label)
-  }}
-```
-
-```{r}
-max_char_length <- 25
-pseoe <- pseoe |>
-  mutate(
-    degree_label = recode(degree_label,
-                          "Certificate < 1 year"="Cert. < 1 yr",
-                          "Certificate 1-2 years"="Cert. 1-2 yrs",
-                          "Certificate 2-4 years"="Cert. 2-4 yrs",
-                          "Post-Bacc Certificate"="Post-Bacc Cert.",
-                          "Post-Masters Certificate"="Post-Masters Cert.",
-                          "Doctoral - Research/Scholarship"="Doctoral - Research",
-                          "Doctoral - Professional Practice"="Doctoral - Prof."),
-    cipcode_label = sapply(cipcode_label, truncate_by_words, max_length = max_char_length)
-  )
-```
-
-```{r}
-pseoe <- pseoe |>
-  mutate(degree_label = factor(degree_label, levels = unique(degree_label[order(degree_level)]))
-  )
-```
-
-```{r}
-pseoe <- pseoe |>
-  mutate(
-    institution_state = ifelse(
-      institution_state == "" | is.na(institution_state), 
-      "Others", 
-      institution_state
-    )
-  )
-
-pseoe <- pseoe |>
-  filter(cipcode_label != "All Instructional Programs")
-```
-
-```{r}
-cat("Rows:", nrow(pseoe), "\nColumns:", ncol(pseoe), "\n")
-```
-
-
 
 ## What are the top-earning fields of study within each degree type and across time?
 
@@ -149,6 +79,7 @@ suppressWarnings(
     geom_bar(stat ="identity", position="dodge",na.rm = TRUE) +
     facet_wrap(~degree_label, scales="free_x", nrow =2, drop =TRUE) + 
     scale_x_reordered() + 
+    scale_y_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
     theme_minimal(base_size =14) + 
     labs(
       title =paste("Top", top_n, "Avg. Median Earnings by Field of Study and Degree Type") ,
@@ -173,7 +104,7 @@ Certificates, for instance, often result in lower income compared to associate o
 
 Certain fields stand out for disproportionately high earnings at advanced degree levels. For example, graduates with Health Profession Master’s degrees often earn more in Year 1 than most Doctoral - Research graduates make even 10 years post-graduation. This might reflect the immediate applicability and demand for healthcare expertise, like possibly nursing.
 
-Furthermore, fields related to science and technology consistently dominate top-earning outcomes across all degree levels. This likely reflects the steady demand and high value placed on specialized technical and analytical skills in the labor market. However, healthcare professionals appear to significantly increase their earning potential with advanced degrees, while engineering fields tend to show steady earning growth across all degree levels.
+Furthermore, fields related to science and technology consistently dominate top-earning outcomes across all degree levels. This likely reflects the consistent demand and high value placed on specialized technical and analytical skills in the labor market. However, healthcare professionals appear to significantly increase their earning potential with advanced degrees, while engineering fields tend to show steady earning growth across all degree levels.
 
 ## How do earnings compare across states and time?
 
@@ -214,6 +145,7 @@ plot_df <- pseoe |>
 suppressWarnings(
   ggplot(plot_df, aes(x = median_earnings, y = institution_state, color = year)) +
     geom_point(size = 3, position = position_dodge(width = 0.5)) +
+    scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."))+
     theme_minimal(base_size = 14) +
     labs(
       title = "Avg. Median Earnings by State",
@@ -265,6 +197,8 @@ suppressWarnings(
                      point.padding = 0.5, 
                      segment.color = "grey50") +
     theme_minimal(base_size = 14) +
+    scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
+    scale_y_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
     labs(
       title = "Employment Counts vs. Avg. Median Earnings by Degree Type (Year 1)",
       y = "Total Year 1 Employment Count",
@@ -287,7 +221,7 @@ Certificate programs (\<1 year and 1-2 years) cluster at the low end for both ea
 
 Masters degrees seem to balance moderate incomes and employment by occupying the middle ground. Overall, this plot clearly suggests that factors beyond immediate income, such as accessibility, cost, and career pathways, may heavily influence degree level choices.
 
-## How does the total number of graduates compare to the number of employed graduates by degree level?
+## How does the total number of graduates compare to employed graduates by degree level, one year from graduation?
 
 ```{r, fig.width=10, fig.height=10}
 
@@ -326,6 +260,7 @@ suppressWarnings(
     geom_point(size = 4) +
     scale_color_manual(values = c("red", "blue")) +
     theme_minimal(base_size = 14) +
+    scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
     labs(
       title = "Graduate vs. Employment Counts by Degree Level (Year 1)",
       x = "Count of Students",
@@ -344,11 +279,11 @@ suppressWarnings(
 
 ```
 
-This plot shows the difference between total graduates and those employed one year after graduation. Niche degrees, such as certificates and doctoral degrees, demonstrate higher employment rates, with relatively small gaps between graduates and employed individuals. In contrast, more general degrees like Associates, Baccalaureate, and Masters show noticeable gaps, indicating a significant portion of graduates remain unemployed.
+This plot shows the difference between total graduates and those employed one year after graduation. Niche degrees, such as certificates and doctoral degrees, show higher employment rates, with relatively small gaps between graduates and employed individuals. In contrast, more general degrees like Associates, Baccalaureate, and Masters show noticeable gaps, indicating that a significant portion of graduates remain unemployed.
 
 This discrepancy could be due to the broader applicability and generality of these degrees, which may lead to greater variability in employment outcomes. Additionally, the larger graduate populations for these degrees might create more competition in the job market, further contributing to the gaps. Also, the relatively small graduate numbers in niche fields may align better with job market demand, which would result in the higher observed employment rates.
 
-## How do employment outcomes compare across the most popular fields? 
+## How do employment outcomes compare across the most popular fields?
 
 ```{r, fig.width=10, fig.height=12}
 
@@ -376,7 +311,7 @@ plot_df_normalized <- plot_df |>
     avg_median_y10_income = scales::rescale(avg_median_y10_income)
   )
 
-title_text<-sprintf("Employability and Income Analysis for Top %d Popular Fields of Study (Normalized)", top_n)
+title_text<-sprintf("Employability and Income Analysis for Top %d Historically Popular Fields of Study (Normalized)", top_n)
 title <- tags$h3(title_text)
 
 # https://edav.info/multidimensional_continuous.html#interactive-parallel-coordinate-plot
@@ -387,11 +322,17 @@ parcoords_plot <- parcoords(
   color = list(colorBy = "cipcode_label", colorScale = "scaleOrdinal", colorScheme = "schemeCategory10"),
   alpha = 0.5,
   withD3 = TRUE,
-  width = 1000,
-  height = 600
+  #width = 1000,
+  #height = 600
 )
 
+#scrollable_fix <- htmltools::div(
+#  style = "overflow-y: auto; height: 600px; border: 1px solid #ccc; padding: 10px;",
+#  parcoords_plot
+#)
+
 htmltools::browsable(tagList(title, parcoords_plot))
+#htmltools::browsable(tagList(title, scrollable_fix))
 
 ```
 
@@ -407,7 +348,6 @@ Overall, these trends highlight how different fields of study align with various
 
 ## How have career prospects changed over the past decade?
 
-
 ```{r}
 idcols_inst <- c(
   "agg_level_pseo", "inst_level", "institution", "degree_level",
@@ -416,8 +356,6 @@ idcols_inst <- c(
 
 
 ```
-
-
 
 ```{r}
 pseoe_01and16 <- pseoe |> 
@@ -443,12 +381,9 @@ pseoe_cipcode_change01to16 <- pseoe_cipcode_change01to16 |>
 
 ```
 
-
 ```{r}
 pseoe_cipcode_change01to16
 ```
-
-
 
 ```{r}
 ggplot(pseoe_cipcode_change01to16[1:15, ], aes(y = factor(cipcode_degree_label,
@@ -459,6 +394,7 @@ ggplot(pseoe_cipcode_change01to16[1:15, ], aes(y = factor(cipcode_degree_label,
   xlab("Change in Median Earning") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
 ```{r}
 ggplot(tail(pseoe_cipcode_change01to16, 15), aes(y = factor(cipcode_degree_label,
                                                                    levels = cipcode_degree_label[order(change_med_earning)]),
@@ -497,8 +433,6 @@ ggplot(pseoe_typedegree_change01to16, aes(y = factor(degree_label,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-
-
 ## Relation between y1 and y5 earnings
 
 ```{r}
@@ -508,11 +442,6 @@ pseoe_y1andy10 <- pseoe |>
 pseoe_y1andy10
 ```
 
-
-
-
-
-
 ```{r}
 
 ggplot(pseoe_y1andy10, aes(x = y1_p50_earnings, y = y10_p50_earnings)) +
@@ -520,4 +449,3 @@ ggplot(pseoe_y1andy10, aes(x = y1_p50_earnings, y = y10_p50_earnings)) +
 #  scale_fill_gradient(low="white", high="red") +
   facet_wrap(~degree_label)
 ```
-

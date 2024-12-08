@@ -222,7 +222,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>For this project, we are using Post-Secondary Employment Outcomes (PSEO) datasets that contain earnings and employment outcomes for graduates.</p>
 <section id="data-source" class="level3" data-number="2.1.1">
 <h3 data-number="2.1.1" class="anchored" data-anchor-id="data-source"><span class="header-section-number">2.1.1</span> Data Source</h3>
-<p>The national and state-level PSEO datasets are publicly available through the <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">United States Center for Economic Studies</a>. Specifically, we are using the <strong>PSEOE</strong> files (contains salary and employment statistics) from the PSEO section.</p>
+<p>The national and state-level PSEO datasets are publicly available through the <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">United States Center for Economic Studies</a>. Specifically, we are using the <strong>PSEOE</strong> files (contains salary and employment statistics) from the PSEO section. We are also using official PSEOE schema files with ID to string value mappings.</p>
 </section>
 <section id="data-collection" class="level3" data-number="2.1.2">
 <h3 data-number="2.1.2" class="anchored" data-anchor-id="data-collection"><span class="header-section-number">2.1.2</span> Data Collection</h3>
@@ -241,17 +241,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul></li>
 <li>Status: provides information about the “quality” of an observation in its respective data column</li>
 </ul>
-<p>The main identifiers in the dataset that we will use in our analysis includes:</p>
+<p>The main identifiers in the dataset and their respective mapping ID to string mapping files that we will use in our analysis includes:</p>
 <ul>
-<li><strong>Institution</strong></li>
-<li><strong>Degree Level</strong></li>
-<li><strong>Degree Field</strong></li>
+<li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_institution"><strong>Institution</strong></a></li>
+<li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_degree_level"><strong>Degree Level</strong></a></li>
+<li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_cip_codes"><strong>Degree Field</strong></a></li>
 <li><strong>Cohort Graduation Year</strong></li>
 </ul>
 </section>
 <section id="data-coverage" class="level3" data-number="2.1.4">
 <h3 data-number="2.1.4" class="anchored" data-anchor-id="data-coverage"><span class="header-section-number">2.1.4</span> Data Coverage</h3>
-<p>The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the <a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO data notices</a> for their updates.</p>
+<p>The data covers the years from 2001 to 2016 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the <a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO data notices</a> for their updates.</p>
 <p><strong>Limitations</strong>: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found on <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">this webpage</a>.</p>
 </section>
 <section id="data-referencesdocumentation" class="level3" data-number="2.1.5">
@@ -261,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><a href="https://lehd.ces.census.gov/data/pseo_experimental.html">PSEO Data</a> (Data Download &amp; Coverage Stats)</li>
 <li><a href="https://lehd.ces.census.gov/data/pseo_documentation.html">PSEO Documentation</a> (High Level Summary)</li>
 <li><a href="https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf">PSEO Technical Documentation</a> (Technical Details, Data Collection, Rationale)</li>
-<li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo">PSEO Schema</a> (4.25, 4.36, 4.37)</li>
+<li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo">PSEO Schema</a> (4.25, 4.36, 5.13.2, 5.14, 5.15.2, 5.16)</li>
 <li><a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO Data Notices</a></li>
 </ul>
 </section>
