@@ -8,6 +8,11 @@ In this section, we will explore several questions about the data, separated as 
 library(ggplot2)
 library(dplyr)
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(tidytext))
+library(ggrepel)
+library(tidyr)
+library(parcoords)
+library(htmltools)
 ```
 
 ```{r}
@@ -42,8 +47,363 @@ pseoe <- pseoe |>
     by = "institution"
   )
 ```
+```{r}
+truncate_by_words <- function(label, max_length) {
+  words <- strsplit(label, " ")[[1]]
+  cum_lengths <- cumsum(nchar(words)) + seq_along(words) - 1
+  truncated <- max(which(cum_lengths <= max_length), 0)
+  if (truncated < length(words)) {
+    return(paste0(paste(words[1:truncated], collapse = " "), "..."))
+  } else {
+    return(label)
+  }}
+```
 
-## How do Earnings Differ by Field of Study and Degree Type?
+```{r}
+max_char_length <- 25
+pseoe <- pseoe |>
+  mutate(
+    degree_label = recode(degree_label,
+                          "Certificate < 1 year"="Cert. < 1 yr",
+                          "Certificate 1-2 years"="Cert. 1-2 yrs",
+                          "Certificate 2-4 years"="Cert. 2-4 yrs",
+                          "Post-Bacc Certificate"="Post-Bacc Cert.",
+                          "Post-Masters Certificate"="Post-Masters Cert.",
+                          "Doctoral - Research/Scholarship"="Doctoral - Research",
+                          "Doctoral - Professional Practice"="Doctoral - Prof."),
+    cipcode_label = sapply(cipcode_label, truncate_by_words, max_length = max_char_length)
+  )
+```
+
+```{r}
+pseoe <- pseoe |>
+  mutate(degree_label = factor(degree_label, levels = unique(degree_label[order(degree_level)]))
+  )
+```
+
+```{r}
+pseoe <- pseoe |>
+  mutate(
+    institution_state = ifelse(
+      institution_state == "" | is.na(institution_state), 
+      "Others", 
+      institution_state
+    )
+  )
+
+pseoe <- pseoe |>
+  filter(cipcode_label != "All Instructional Programs")
+```
+
+```{r}
+cat("Rows:", nrow(pseoe), "\nColumns:", ncol(pseoe), "\n")
+```
+
+
+
+## What are the top-earning fields of study within each degree type and across time?
+
+```{r, fig.width=10, fig.height=12}
+
+top_n <-5
+
+plot_df <-pseoe |>
+  group_by(degree_level, degree_label, cipcode_label) |>
+  summarize(
+    median_y1_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+    median_y5_earnings =mean(y5_p50_earnings, na.rm = TRUE),
+    median_y10_earnings= mean(y10_p50_earnings, na.rm = TRUE),
+    .groups="drop"
+  ) |>
+  filter(
+    !is.na(median_y1_earnings) | 
+    !is.na(median_y5_earnings)| 
+    !is.na(median_y10_earnings)
+  ) |>
+  arrange(degree_level, desc(median_y10_earnings)) |>
+  group_by(degree_label) |>
+  slice_head(n =top_n) |>
+  mutate(
+    cipcode_label=reorder_within(
+      cipcode_label,-median_y10_earnings, degree_label
+    )
+  ) |>
+  pivot_longer(
+    cols = starts_with("median"), 
+    names_to="year", values_to ="median_earnings"
+  ) |>
+  mutate(
+    year=factor(
+      year, levels=c(
+        "median_y1_earnings","median_y5_earnings", "median_y10_earnings"
+      ),
+      labels=c("Year 1", "Year 5", "Year 10")
+    ),
+    degree_label =factor(
+      degree_label, levels=unique(degree_label[order(degree_level)])
+    )
+  )
+
+suppressWarnings(
+  ggplot(plot_df, aes(x= cipcode_label, y=median_earnings, fill =year)) +
+    geom_bar(stat ="identity", position="dodge",na.rm = TRUE) +
+    facet_wrap(~degree_label, scales="free_x", nrow =2, drop =TRUE) + 
+    scale_x_reordered() + 
+    theme_minimal(base_size =14) + 
+    labs(
+      title =paste("Top", top_n, "Avg. Median Earnings by Field of Study and Degree Type") ,
+      x= "Field of Study",
+      y="Avg. Median Earnings (2021 US Dollars)",
+      fill ="Earnings Year"
+    ) +
+    theme(
+      axis.text.x = element_text(angle =55, hjust =1, size=10),
+      axis.title.y=element_text(margin = margin(r = 10)),
+      strip.text = element_text(size = 12, face = "bold", margin = margin(b=5)),
+      panel.grid.major.x= element_blank(),
+      plot.margin = margin(t = 20, r= 10, b = 20, l = 20),
+      legend.position="top", legend.direction="horizontal"
+    )
+)
+```
+
+The plot displays the top 5 earning fields of study for each degree type. While the general intuition that higher degrees yield higher income holds true, there are notable exceptions.
+
+Certificates, for instance, often result in lower income compared to associate or bachelor's degrees for the upper echelon earnings. This could be because many pursuing certificates are transitioning into new fields, starting at entry-level positions in their new career paths.
+
+Certain fields stand out for disproportionately high earnings at advanced degree levels. For example, graduates with Health Profession Master’s degrees often earn more in Year 1 than most Doctoral - Research graduates make even 10 years post-graduation. This might reflect the immediate applicability and demand for healthcare expertise, like possibly nursing.
+
+Furthermore, fields related to science and technology consistently dominate top-earning outcomes across all degree levels. This likely reflects the steady demand and high value placed on specialized technical and analytical skills in the labor market. However, healthcare professionals appear to significantly increase their earning potential with advanced degrees, while engineering fields tend to show steady earning growth across all degree levels.
+
+## How do earnings compare across states and time?
+
+```{r, fig.width=10, fig.height=12}
+
+plot_df <- pseoe |>
+  filter(!institution_state %in% c("Others", "US")) |>
+  group_by(institution_state) |>
+  summarize(
+    median_y1_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+    median_y5_earnings = mean(y5_p50_earnings, na.rm = TRUE),
+    median_y10_earnings = mean(y10_p50_earnings, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  filter(
+    !is.na(median_y1_earnings) | 
+    !is.na(median_y5_earnings) | 
+    !is.na(median_y10_earnings)
+  ) |>
+  mutate(
+    sort_value = ifelse(is.na(median_y10_earnings), median_y5_earnings, median_y10_earnings),
+    institution_state = reorder(institution_state, sort_value)
+  ) |>
+  pivot_longer(
+    cols = starts_with("median"),
+    names_to = "year",
+    values_to = "median_earnings"
+  ) |>
+  mutate(
+    year = factor(
+      year, levels = c(
+        "median_y1_earnings", "median_y5_earnings", "median_y10_earnings"
+      ),
+      labels = c("Year 1", "Year 5", "Year 10")
+    )
+  )
+
+suppressWarnings(
+  ggplot(plot_df, aes(x = median_earnings, y = institution_state, color = year)) +
+    geom_point(size = 3, position = position_dodge(width = 0.5)) +
+    theme_minimal(base_size = 14) +
+    labs(
+      title = "Avg. Median Earnings by State",
+      x = "Avg. Median Earnings (2021 US Dollars)",
+      y = "State",
+      color = "Earnings Year"
+    ) +
+    theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
+)
+
+```
+
+This plot shows income outcomes by state, validating the intuition that more experience generally leads to higher earnings across all states.
+
+However, income levels vary significantly between states. For instance, Rhode Island’s average median income one year after graduation rivals South Dakota’s ten-year figure, highlighting disparities likely driven by the dominant industries in each state. States with higher-paying industries, like finance or technology, tend to have higher earnings, while rural or agriculture-focused states remain lower.
+
+Notably, a large population state like New York shows a relatively low average median income in Year 1 but a significantly higher value by Year 10. This may reflect the variability and range of salaries in the state, driven by its diverse opportunities and the large population accessing them.
+
+## Is there a correlation between Year 1 income outcomes and employment counts by degree level?
+
+```{r, fig.width=10, fig.height=12}
+
+plot_df <- pseoe |>
+  group_by(degree_level, degree_label) |>
+  summarize(
+    avg_median_y1_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+    total_employment = sum(y1_grads_earn, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  filter(
+    !is.na(avg_median_y1_earnings),
+    total_employment > 0
+  ) |>
+  arrange(degree_level)
+
+suppressWarnings(
+  ggplot(plot_df, aes(y = total_employment, x = avg_median_y1_earnings)) +
+    geom_point(size = 4, color = "red") +
+    geom_label_repel(aes(label = degree_label), 
+                     size = 4, 
+                     max.overlaps = Inf, 
+                     box.padding = 0.5, 
+                     point.padding = 0.5, 
+                     segment.color = "grey50") +
+    theme_minimal(base_size = 14) +
+    labs(
+      title = "Employment Counts vs. Avg. Median Earnings by Degree Type (Year 1)",
+      y = "Total Year 1 Employment Count",
+      x = "Avg. Median Earnings (2021 US Dollars)"
+    ) +
+    theme(
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 14, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 14, margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20)
+    )
+)
+
+```
+
+This plot shows Year 1 average median earnings against total Year 1 employment counts. While one might assume that higher degree levels - and their associated higher income - would attract more graduates, the data shows no clear correlation. High-paying degrees like Doctoral - Prof. and Doctoral - Research have relatively low employment counts, while degrees like Baccalaureate and Associates have much higher counts despite lower incomes.
+
+Certificate programs (\<1 year and 1-2 years) cluster at the low end for both earnings and employment, reinforcing their role as niche credentials, potentially for those who are looking to switch careers as stated earlier.
+
+Masters degrees seem to balance moderate incomes and employment by occupying the middle ground. Overall, this plot clearly suggests that factors beyond immediate income, such as accessibility, cost, and career pathways, may heavily influence degree level choices.
+
+## How does the total number of graduates compare to the number of employed graduates by degree level?
+
+```{r, fig.width=10, fig.height=10}
+
+plot_df <- pseoe |>
+  group_by(degree_label, degree_level) |>
+  summarize(
+    total_graduates = sum(y10_ipeds_count, na.rm = TRUE),
+    total_employment = sum(y10_grads_earn, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  filter(
+    total_graduates > 0,
+    total_employment >= 0
+  ) |>
+  arrange(degree_level) |>
+  mutate(
+    degree_label = factor(degree_label, levels = unique(degree_label[order(degree_level)]))
+  )
+
+plot_df_long <- plot_df |>
+  pivot_longer(
+    cols = c(total_employment, total_graduates),
+    names_to = "status",
+    values_to = "count"
+  ) |>
+  mutate(
+    status = factor(status, levels = c("total_employment", "total_graduates"),
+                    labels = c("Employed", "Graduates"))
+  )
+
+suppressWarnings(
+  ggplot(plot_df_long, aes(x = count, y = degree_label, color = status)) +
+    geom_segment(data = plot_df, aes(x = total_employment, xend = total_graduates, 
+                                     y = degree_label, yend = degree_label), 
+                 inherit.aes = FALSE, color = "grey50", size = 1) +
+    geom_point(size = 4) +
+    scale_color_manual(values = c("red", "blue")) +
+    theme_minimal(base_size = 14) +
+    labs(
+      title = "Graduate vs. Employment Counts by Degree Level (Year 1)",
+      x = "Count of Students",
+      y = "Degree Level",
+      color = "Employment Status"
+    ) +
+    theme(
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 14, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 14, margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
+)
+
+```
+
+This plot shows the difference between total graduates and those employed one year after graduation. Niche degrees, such as certificates and doctoral degrees, demonstrate higher employment rates, with relatively small gaps between graduates and employed individuals. In contrast, more general degrees like Associates, Baccalaureate, and Masters show noticeable gaps, indicating a significant portion of graduates remain unemployed.
+
+This discrepancy could be due to the broader applicability and generality of these degrees, which may lead to greater variability in employment outcomes. Additionally, the larger graduate populations for these degrees might create more competition in the job market, further contributing to the gaps. Also, the relatively small graduate numbers in niche fields may align better with job market demand, which would result in the higher observed employment rates.
+
+## How do employment outcomes compare across the most popular fields? 
+
+```{r, fig.width=10, fig.height=12}
+
+
+top_n <- 20
+plot_df <- pseoe |>
+  group_by(cipcode_label) |>
+  summarize(
+    total_graduates = sum(y1_ipeds_count, na.rm = TRUE),
+    employment_rate = sum(y1_grads_earn, na.rm = TRUE) / total_graduates,
+    avg_median_y1_income = mean(y1_p50_earnings, na.rm = TRUE),
+    avg_median_y5_income = mean(y5_p50_earnings, na.rm = TRUE),
+    avg_median_y10_income = mean(y10_p50_earnings, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  filter(total_graduates > 0) |>
+  arrange(desc(total_graduates)) |>
+  slice_head(n = top_n)
+
+plot_df_normalized <- plot_df |>
+  mutate(
+    employment_rate = scales::rescale(employment_rate),
+    avg_median_y1_income = scales::rescale(avg_median_y1_income),
+    avg_median_y5_income = scales::rescale(avg_median_y5_income),
+    avg_median_y10_income = scales::rescale(avg_median_y10_income)
+  )
+
+title_text<-sprintf("Employability and Income Analysis for Top %d Popular Fields of Study (Normalized)", top_n)
+title <- tags$h3(title_text)
+
+# https://edav.info/multidimensional_continuous.html#interactive-parallel-coordinate-plot
+parcoords_plot <- parcoords(
+  data = plot_df_normalized,
+  rownames = FALSE,
+  brushMode = "1D-axes",
+  color = list(colorBy = "cipcode_label", colorScale = "scaleOrdinal", colorScheme = "schemeCategory10"),
+  alpha = 0.5,
+  withD3 = TRUE,
+  width = 1000,
+  height = 600
+)
+
+htmltools::browsable(tagList(title, parcoords_plot))
+
+```
+
+This plot provides an analysis of employment outcomes, including employment rates and income trajectories, for the most popular fields of study (by graduate volume).
+
+Fields like Homeland Security, Business Management, and Registered Nursing show high employment rates, which make them attractive for those seeking immediate job security. However, their normalized median incomes decline over time relative to other fields, suggesting potential income stagnation for graduates in these areas.
+
+Fields like Biological and Biomedical Engineering start with lower relative employment rates and initial incomes but demonstrate steady and appreciable growth in earnings over time. This indicates strong potential for career growth.
+
+Also, while its employment rate remains middling compared to the other majors, Engineering achieves the highest normalized income growth, making it an excellent choice for those prioritizing long-term earning potential over initial job placement.
+
+Overall, these trends highlight how different fields of study align with various career priorities - whether it's immediate employment or sustained income growth over time. A prospective student can weigh their personal goals to select a major by these metrics.
 
 ## How have career prospects changed over the past decade?
 

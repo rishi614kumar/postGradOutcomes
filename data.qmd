@@ -104,7 +104,7 @@ The first thing that can be observed from this plot is that the year 10 earnings
 The next thing that we can take into account is that the dataset gives us information about the data present in the data columns through the status columns. Concretely, the status columns contain one of the values shown in the following table (from the [LEHD data schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_status_flags)):
 
 | Status code | Description |
-|----------------|--------------------------------------------------------|
+|----|----|
 | -2 | No data available in this category for this quarter |
 | -1 | Data not available to compute this estimate |
 | 1 | OK |
