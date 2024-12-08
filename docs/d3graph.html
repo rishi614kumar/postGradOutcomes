@@ -169,16 +169,52 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div style="text-align: center; font-size: 24px; font-weight: bold;">
+<pre><code>Trends in Popular Fields of Study: Graduation Counts Over Time</code></pre>
+</div>
 <style>
   * {
     font-family: sans-serif;
   }
+  .bar {
+    stroke: black;
+    stroke-width: 1px;
+  }
+  .label {
+    font-size: 12px;
+    fill: black;
+  }
+  .year {
+    font-size: 40px;
+    fill: gray;
+    text-anchor: end;
+  }
+  button#pause {
+  display: block;
+  margin: 10px auto; 
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  position: relative; 
+}
+#plot-container {
+  text-align: center; 
+  margin-top: 20px;
+}
+
 </style>
+<div id="plot-container">
 <div id="plot">
 
 </div>
+<button id="pause" type="button">
+Pause
+</button>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="scripts/myscript.js"></script>
+<p>This interactive graph shows trends in the most popular fields of study based on graduation counts over time. The pause button can be clicked to pause the visualization at any displayed year.</p>
+<p>These trends reflect societal priorities and workforce demands during different periods. For example, Healthcare fields show consistency, likely due to a steady demand for medical professionals, as seen in our previous analyses as well, since healthcare is always needed. Liberal Arts/Sciences show a rise, possibly because of their broad appeal and flexibility for students who are undecided about a specific career path. The prominence of Business-related fields highlights their alignment with job market demands and strong career outcomes, also how we’ve seen in our previous analyses. Interestingly, technology-related fields like Computer and Information Sciences show significant variation, frequently entering and leaving the top 10. This could be because the positive perceptions of the technology industry did not have its massive increase until the mid 2010s. If our data extended into more recent years, we likely could see similar tech-related fields ranking much higher, such as fields like Data Science, since many universities have started those programs recently.</p>
 
 
 
