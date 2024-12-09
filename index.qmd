@@ -5,13 +5,12 @@ With over 60% of Americans having attended college and enrollment numbers increa
 
 For the reasons above, we have focused on this Post-Secondary Employment Outcomes topic. This project will explore the following general questions:
 
-- How do earnings differ by field of study and degree type?
-- What are the trends in earnings growth from Year 1 to Year 5 post-graduation? Year 5 to Year 10?
-- Which fields or degrees lead to the highest employment rates after graduation?
-- How do employment outcomes vary by institution?
-- What is the earnings gap between the 25th and 75th percentiles across fields or degrees?
-- Are graduates in specific fields or institutions more likely to stay in lower or higher earning brackets?
-- How have career prospects changed over the past decade?
+- What are the top-earning fields of study within each degree type and across time?
+- How do earnings compare across states and time?
+- Is there a correlation between Year 1 income outcomes and employment counts by degree level?
+- How does the total number of graduates compare to employed graduates by degree level, one year from graduation?
+- How do employment outcomes compare across the most popular fields?
+- What are the most popular fields of study over time?
 
 ### References
 1. [Census Bureau, Educational Attainment](https://www.census.gov/data/tables/2018/demo/education-attainment/cps-detailed-tables.html)

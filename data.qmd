@@ -6,7 +6,7 @@ For this project, we are using Post-Secondary Employment Outcomes (PSEO) dataset
 
 ### Data Source
 
-The national and state-level PSEO datasets are publicly available through the [United States Center for Economic Studies](https://lehd.ces.census.gov/data/pseo_experimental.html). Specifically, we are using the **PSEOE** files (contains salary and employment statistics) from the PSEO section.
+The national and state-level PSEO datasets are publicly available through the [United States Center for Economic Studies](https://lehd.ces.census.gov/data/pseo_experimental.html). Specifically, we are using the **PSEOE** files (contains salary and employment statistics) from the PSEO section. We are also using official PSEOE schema files with ID to string value mappings.
 
 ### Data Collection
 
@@ -24,16 +24,16 @@ Note that there are three types of columns in the PSEO datasets:
     -   Earning outcomes are provided through the 25th, 50th, and 75th percentiles, in 2021 dollars
 -   Status: provides information about the "quality" of an observation in its respective data column
 
-The main identifiers in the dataset that we will use in our analysis includes:
+The main identifiers in the dataset and their respective mapping ID to string mapping files that we will use in our analysis includes:
 
--   **Institution**
--   **Degree Level**
--   **Degree Field**
+-   [**Institution**](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_institution)
+-   [**Degree Level**](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_degree_level)
+-   [**Degree Field**](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_cip_codes)
 -   **Cohort Graduation Year**
 
 ### Data Coverage
 
-The data covers the years from 2001 to 2020 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the [PSEO data notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf) for their updates.
+The data covers the years from 2001 to 2016 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the [PSEO data notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf) for their updates.
 
 **Limitations**: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found on [this webpage](https://lehd.ces.census.gov/data/pseo_experimental.html).
 
@@ -44,7 +44,7 @@ For more details on the above, see the follow resources:
 -   [PSEO Data](https://lehd.ces.census.gov/data/pseo_experimental.html) (Data Download & Coverage Stats)
 -   [PSEO Documentation](https://lehd.ces.census.gov/data/pseo_documentation.html) (High Level Summary)
 -   [PSEO Technical Documentation](https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf) (Technical Details, Data Collection, Rationale)
--   [PSEO Schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo) (4.25, 4.36, 4.37)
+-   [PSEO Schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo) (4.25, 4.36, 5.13.2, 5.14, 5.15.2, 5.16)
 -   [PSEO Data Notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf)
 
 ## Missing value analysis
@@ -104,7 +104,7 @@ The first thing that can be observed from this plot is that the year 10 earnings
 The next thing that we can take into account is that the dataset gives us information about the data present in the data columns through the status columns. Concretely, the status columns contain one of the values shown in the following table (from the [LEHD data schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_status_flags)):
 
 | Status code | Description |
-|----|----|
+|------------------------------------|------------------------------------|
 | -2 | No data available in this category for this quarter |
 | -1 | Data not available to compute this estimate |
 | 1 | OK |
