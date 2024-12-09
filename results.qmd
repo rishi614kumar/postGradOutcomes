@@ -32,6 +32,13 @@ pseoe <- preprocess_pseoe(
 #cat("Rows:", nrow(pseoe), "\nColumns:", ncol(pseoe), "\n")
 ```
 
+```{r}
+pseoe_grad_cohort <- pseoe |>
+  group_by(grad_cohort) |>
+  summarize()
+```
+
+
 ## What are the top-earning fields of study within each degree type and across time?
 
 ```{r, fig.width=10, fig.height=12}
@@ -361,13 +368,15 @@ pseoe_y1andy10 <- pseoe |>
 ggplot(pseoe_y1andy10, aes(x = y1_p50_earnings, y = y10_p50_earnings)) +
   geom_point(alpha=0.2) +
   geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
+  scale_y_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
   facet_wrap(~degree_label) +
   labs(
     x = "Median earnings one year after graduation",
     y = "Median earnings ten years after graduation",
     title = "Median earnings one versus ten years after graduation, per degree type",
   ) +
-  theme_grey(13)
+  theme_minimal(base_size=14)
 ```
 This plot shows scatterplots for median earnings one year versus ten years after graduation, one for each type of degree. In these plots, each dot represents one cohort. The red dashed line corresponds to "zero growth potential", i.e. the median earnings one and ten years after graduation is the same. We see that for all degree types, almost all cohorts have higher median earnings ten years after graduation. However, the range of magnitudes of this difference seems to depend strongly on the type of degree. The strongest growth potential seems to occur for cohorts in a professional doctoral program, where the median earnings 10 years after graduation can grow up to almost \$400,000 from around \$60,000 one year after graduation. Furthermore, bachelor's programs also allow for significant growth potential, where earnings ten years after graduation often seem to be \$100,000 higher than one year after graduation.
 
@@ -380,7 +389,6 @@ Should I get a Master's? This is a difficult question faced by many students who
 
 ```{r, fig.width=10, fig.height=12}
 pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
-  filter(cipcode != "00") |>
   filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
   group_by(cipcode) |>
   filter(all(c("05", "07") %in% degree_level)) |>
@@ -399,11 +407,23 @@ pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
   group_by(cipcode_label, degree_label) |>
   summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
             .groups = "drop") |>
-  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y1_p50_earnings, .fun = mean))
-
+  mutate(
+    cipcode_label = factor(
+      cipcode_label,
+      levels = pseoe |>
+        filter(cipcode %in% top_cipcodes, degree_level == "07") |>
+        group_by(cipcode_label) |>
+        summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
+        arrange(avg_y1_p50_earnings) |>
+        pull(cipcode_label)
+    )
+  )
 
 ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y1_p50_earnings, y=cipcode_label, color=degree_label)) +
   geom_point(size = 3) +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."),
+                     limits = c(0, 110000)) +
+  theme_minimal(base_size=14) +
   labs(
     x = "Average median earnings one year after graduation",
     y = "Field of study",
@@ -420,47 +440,13 @@ ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y1_p50_earnings, y=cip
 
 
 ```
+This plot shows the average median earnings, one year after graduation, for the twenty most popular fields of study for which both Bachelor's and Master's programs are available. We see that for all of these fields, the average median earnings is always highest for the master's program. The magnitude of the difference depends on the specific field, where we see a difference of almost \$30,000 for business and management degrees and of more than \$20,000 for computer and information degrees. For engineering degrees a Master's degree only increases the average median earnings from about \$63,000 to around \$75,000, which is a small relative increase of around 20% For other degree's such as history, psychology and English language, the absolute difference is also around \$10,000 but still corresponds to a relative change of about 33%. 
 
-```{r}
+This graph seems to indicate that a Master's degree is indeed worth it, as it significantly increases median earnings one year after graduation. However, it does not take into account the cost of a Master's degree, both from a financial perspective and a time perspective. Completing a Master's degree requires a significant financial investment and the devoted time can also be used to gain work experience and progress your career, which might perhaps lead to higher earnings. Furthermore, this analysis also does not take into account at which stage in their career graduates are. Master's students often already have several years of work experience before starting the program, which might automatically lead to higher earnings after completing the program. 
+
+
+```{r, fig.width=10, fig.height=12}
 pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
-  filter(cipcode != "00") |>
-  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
-  group_by(cipcode) |>
-  filter(all(c("05", "07") %in% degree_level)) |>
-  ungroup() |>
-  filter(degree_level == "05" | degree_level == "07") |>
-  group_by(cipcode) |>
-  summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE)) |>
-  arrange(desc(total_grads)) |>
-  slice_head(n = 20)
-
-top_cipcodes <- unique(pseoe_popular_cipcodes_Bach_Masters$cipcode)
-
-pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
-  filter(cipcode %in% top_cipcodes) |>
-  filter(degree_level == "05" | degree_level == "07") |>
-  group_by(cipcode_label, degree_label) |>
-  summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
-            avg_y1_p25_earnings = mean(y1_p25_earnings, na.rm = TRUE),
-            avg_y1_p75_earnings = mean(y1_p75_earnings, na.rm = TRUE), 
-            .groups = "drop") |>
-  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y1_p50_earnings, .fun = mean)) |>
-  pivot_longer(
-    cols = c(avg_y1_p50_earnings, avg_y1_p25_earnings, avg_y1_p75_earnings),
-    names_to = "percentile",
-    values_to = "earnings"
-  )
-
-
-ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=earnings, y=cipcode_label, color=degree_label)) +
-  geom_point()
-
-
-
-```
-```{r}
-pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
-  filter(cipcode != "00") |>
   filter(status_y5_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
   group_by(cipcode) |>
   filter(all(c("05", "07") %in% degree_level)) |>
@@ -479,21 +465,45 @@ pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
   filter(degree_level == "05" | degree_level == "07") |>
   group_by(cipcode_label, degree_label) |>
   summarize(avg_y5_p50_earnings = mean(y5_p50_earnings, na.rm = TRUE), .groups = "drop") |>
-  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y5_p50_earnings, .fun = mean))
-
-#  left_join(cipcode_mapping |> select(cipcode, label), by = "cipcode") |>
-#  rename(cipcode_label = label) |>
-#  left_join(degree_mapping |> select(degree_level, label), by = "degree_level") |>
-#  rename(degree_label = label)
-
+  mutate(
+    cipcode_label = factor(
+      cipcode_label,
+      levels = pseoe |>
+        filter(cipcode %in% top_cipcodes, degree_level == "07") |>
+        group_by(cipcode_label) |>
+        summarize(avg_y5_p50_earnings = mean(y5_p50_earnings, na.rm = TRUE), .groups = "drop") |>
+        arrange(avg_y5_p50_earnings) |>
+        pull(cipcode_label)
+    )
+  )
 ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y5_p50_earnings, y=cipcode_label, color=degree_label)) +
-  geom_point()
+  geom_point(size = 3) +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."),
+                     limits = c(0, 110000)) +
+  theme_minimal(base_size=14) +
+  labs(
+    x = "Average median earnings five years after graduation",
+    y = "Field of study",
+    title = "Average median earnings for bachelor's versus master's graduates",
+    color = "Type of degree"
+  ) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
 
 ```
+This plot then again shows the average median earnings for both Bachelor's and Master's programs, but now five years after graduation. We see again that the Master's programs lead to higher average median earnings. However, when closely comparing the two graphs, we see that for lower earning fields such as English language and history, the gap between Master's and Bachelor's graduates seems to have slightly tightened. For higher earning field such as Computer and Engineering however, the gap seems to have slightly widened.
+
 
 ## How important is the institution where you earned your degree?
 
-```{r}
+We all know that institutions have significant differences in reputation and (at least perceived) quality of education. However, we might ask ourselves how this translates into measurable outcomes such as earnings after graduation. 
+
+```{r, fig.width=10, fig.height=12}
 library(ggplot2)
 library(ggridges)
 
@@ -527,15 +537,30 @@ pseoe_ridgeline_data <- pseoe |>
 # Ridgeline plot
 ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p50_earnings, y = cipcode_degree_label)) +
   geom_density_ridges(alpha = 0.8, scale = 1.5, fill = "cornflowerblue") +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."),
+                     limits = c(0, 150000)) +
   labs(
-    x = "Average Year 1 P50 Earnings",
+    x = "Median earnings one year after graduation",
     y = "Degree field and level",
-    title = "Ridgeline Plot of Average Year 1 P50 Earnings",
+    title = "Distribution of median earnings one year after graduation, over institutions",
   ) +
-  theme_minimal()
+  theme_minimal(base_size=14) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
 
 ```
-```{r}
+This ridgeline plot shows how the median earnings one year after graduation are distributed over institutions offering these degrees. These distributions are shown for the top 20 most popular degrees in the dataset. We see that the shape of the distribution varies strongly depending on the specific degree. For example, for a Master's in Business and management or a Bachelor's in Health Professions, the distribution is widely spread. This indicates that for these degrees, the institution does matter significantly, as different institutions correspond to strongly differing median earnings.
+
+However, for other degrees such as a Bachelor's in English Language or Psychology, and to a smaller extent a Bachelor's in Engineering, the distribution is much more tightly spread. Therefore for these degrees, the awarding institution seems to have a smaller impact on earnings outcomes.
+
+In general, the graph also seems to exhibit a trend where higher earning degrees tend to have a more widely spread distribution. 
+
+```{r, fig.width=10, fig.height=12}
 # Calculate median earnings for ordering
 pseoe_ridgeline_data <- pseoe |>
   filter(cipcode != "00") |>
@@ -555,17 +580,31 @@ pseoe_ridgeline_data <- pseoe |>
 # Ridgeline plot
 ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p75_earnings, y = cipcode_degree_label)) +
   geom_density_ridges(alpha = 0.8, scale = 1.5, fill = "cornflowerblue") +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."),
+                     limits = c(0, 150000)) +
   labs(
-    x = "Average Year 1 P50 Earnings",
+    x = "75th percentile earnings one year after graduation",
     y = "Degree field and level",
-    title = "Ridgeline Plot of Average Year 1 P75 Earnings",
-    fill = "Median Earnings"
+    title = "Distribution of 75th percentile earnings one year after graduation, over institutions",
   ) +
-  theme_minimal()
+  theme_minimal(base_size=14) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
 
 
 ```
+This ridgeline plot then shows the distribution of the 75th percentile of earnings one year after graduation over different institutions. We see similar trends as in the previous graph, where the same degrees as before seem to have more widely spread distributions. However, in general we observe that for each degree the 75th percentile earnings are more widely spread than the median earnings. This indicates that the awarding institution seems to be more important when considering the possibility for high earnings outcomes.
+
 ## How have career prospects changed?
+
+The job market is ever-changing. Degrees in fields that led to high paying jobs twenty years ago might not do so presently, while other degrees might have seen a big increase in earnings. In this section, we look at how average median earnings for different degrees have changed from 2001 and 2016, which correspond to the earliest and most recent graduation cohorts in the dataset.
+
+In an attempt to eliminate any bias that is present in the dataset due to incomplete reporting, we performed matching of cohorts from 2001 to cohorts of 2016. Specifically, for each cohort that graduated in 2001 from a certain institution with a certain degree,there is exactly one cohort that graduated from the same institution with the same degree in 2016, and vice-versa. This makes sure that when we are comparing earnings outcomes for a certain degree in 2001 versus 2016, we are doing so for the same institutions awarding the degree. 
 
 
 ```{r}
@@ -577,11 +616,18 @@ idcols_inst <- c(
 pseoe_01and16 <- pseoe |> 
                       filter(grad_cohort == "2001" | grad_cohort == "2016") |>
                       filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
-                      filter(!institution_state %in% c("Others", "US")) |>
                       group_by(across(all_of(idcols_inst))) |>
                       filter(all(c("2001", "2016") %in% grad_cohort))
 
-pseoe_cipcode_change01to16 <- pseoe_01and16|>
+# assertion
+num_cohorts_check <- pseoe_01and16 |>
+  summarize(num_cohorts = n_distinct(grad_cohort), .groups = "drop") |>
+  summarize(all_two = all(num_cohorts == 2))
+
+stopifnot(num_cohorts_check$all_two)
+
+pseoe_cipcode_change01to16 <- pseoe_01and16 |>
+                              ungroup() |>
                               group_by(cipcode_label, degree_label, grad_cohort) |>
                               summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
                               ungroup() |>
@@ -597,28 +643,66 @@ pseoe_cipcode_change01to16 <- pseoe_cipcode_change01to16 |>
 ```
 
 
-```{r}
+```{r, fig.width=10, fig.height=12}
 ggplot(tail(pseoe_cipcode_change01to16, 15), aes(y = factor(cipcode_degree_label,
                                                                    levels = cipcode_degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
-  geom_col() +
-  ylab("Degree field and level") +
-  xlab("Change in average median Earning from 2001 to 2016")
+  geom_col(fill = "cornflowerblue") +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
+  labs(
+    x = "Change in average median earnings one year after graduation (2001 to 2016)",
+    y = "Degree field and level",
+    title = "Degrees with highest increase in average median earnings (2001-2016)",
+  ) +
+  theme_minimal(base_size=14) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
+
 ```
+This plot shows the 15 degrees with the highest increase in average median earnings one year after graduation from 2001 to 2016. We see that a research doctorate in Computer and Information has seen the biggest increase of \$30,000. Also other computer-related degrees such as a Bachelor's in computer engineering, computer/information and computer science make the top 15, where these have seen an increase of around \$12,000. A bachelor's in statistics has seen the second biggest and a research doctorate in business and management the third biggest increase of around \$20,000 and \$15,000 respectively.
 
 
-```{r}
+```{r, fig.width=10, fig.height=12}
 ggplot(pseoe_cipcode_change01to16[1:15, ], aes(y = factor(cipcode_degree_label,
                                                                    levels = cipcode_degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
-  geom_col() +
-  ylab("Degree field and level") +
-  xlab("Change in average median Earning from 2001 to 2016")
+  geom_col(fill = "cornflowerblue") +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
+  labs(
+    x = "Change in average median earnings one year after graduation (2001 to 2016)",
+    y = "Degree field and level",
+    title = "Degrees with highest decrease in average median earnings (2001-2016)",
+  ) +
+  theme_minimal(base_size=14) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
 ```
 
+This plot then shows the degrees with the highest decrease in average median earnings one year after graduation from 2001 to 2016. We see that according to this dataset, a bachelor's in Pharmacy and Pharmaceutical sciences has seen the most drastic decreas of around \$70,000. However, when we examined the data more closely, we saw that this decrease is calculated from only 3 cohorts in both 2001 and 2016, which might be a too small sample to make any hard conclusions. We do however also see a big decrease of around \$25,000 for a professional doctorate in Pharmacy and Pharmaceutical sciences, where this does correspond to a significant sample size of 21 cohorts. 
+
 ```{r}
-pseoe_01and16 |> filter(cipcode_label == "Pharmacy, Pharmaceutical...", degree_label == "Baccalaureate")
+pharmacy_01and16_bac <- pseoe_01and16 |>
+                    filter(cipcode_label == "Pharmacy, Pharmaceutical...", degree_label == "Baccalaureate")
+stopifnot(nrow(pharmacy_01and16_bac) == 3+3)
+
+pharmacy_01and16_doct <- pseoe_01and16 |>
+                    filter(cipcode_label == "Pharmacy, Pharmaceutical...", degree_label == "Doctoral - Prof.")
+stopifnot(nrow(pharmacy_01and16_doct) == 21+21)
+
 ```
+
+We also see a big decrease of around \$30,000 for a research doctorate in Architecture and a decrease of around \$25,000 for an associates degree in Apparel and Textiles.
+
 
 ```{r}
 pseoe_typedegree_change01to16 <- pseoe_01and16 |>
@@ -634,16 +718,28 @@ pseoe_typedegree_change01to16 <- pseoe_typedegree_change01to16 |>
   select(degree_label, change_med_earning)
 ```
 
-```{r}
+```{r, fig.width=10, fig.height=12}
 ggplot(pseoe_typedegree_change01to16, aes(y = factor(degree_label,
                                                                    levels = degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
-  geom_col() +
-  ylab("Degree type") +
-  xlab("Change in Year 1 Median Earning") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  geom_col(fill = "cornflowerblue") +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
+  labs(
+    x = "Change in average median earnings one year after graduation (2001 to 2016)",
+    y = "Degree level",
+    title = "Change in average median earnings per degree level",
+  ) +
+  theme_minimal(base_size=14) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
 ```
 
+This plot then shows the change in average medain earnings one year after graduation for each of the eight different degree levels. We see that only 2 degree levels, a professional doctorate and a one to two year certificate have seen a small increase in median earnings of less then \$500. A master's degree and a two to four year certificate have seen the biggest decreases of around \$1000 and \$5,500 respectively. Note also that due to the matching process, the earnings decrease for Master's programs for example, cannot be caused by the addition of new types of Master's programs that are not attractive in the job market. The decrease is only calculated for Master's for which cohorts graduated in both 2001 and 2016.
 
 ## How does employment rate relate to earnings?
 
@@ -685,5 +781,107 @@ grads_per_cohort <- pseoe |>
         summarize(avg_cohort_size = mean(y1_ipeds_count, na.rm = TRUE)) 
 ggplot(grads_per_cohort, aes(x=grad_cohort, y=avg_cohort_size)) +
   geom_col()
+
+```
+## Some unused code
+
+```{r}
+pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  group_by(cipcode) |>
+  filter(all(c("05", "07") %in% degree_level)) |>
+  ungroup() |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode) |>
+  summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE)) |>
+  arrange(desc(total_grads)) |>
+  slice_head(n = 20)
+
+top_cipcodes <- unique(pseoe_popular_cipcodes_Bach_Masters$cipcode)
+
+pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
+  filter(cipcode %in% top_cipcodes) |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode_label, degree_label) |>
+  summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+            avg_y1_p25_earnings = mean(y1_p25_earnings, na.rm = TRUE),
+            avg_y1_p75_earnings = mean(y1_p75_earnings, na.rm = TRUE), 
+            .groups = "drop") |>
+  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y1_p50_earnings, .fun = mean)) |>
+  pivot_longer(
+    cols = c(avg_y1_p50_earnings, avg_y1_p25_earnings, avg_y1_p75_earnings),
+    names_to = "percentile",
+    values_to = "earnings"
+  )
+
+
+ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=earnings, y=cipcode_label, color=degree_label)) +
+  geom_point()
+
+
+
+```
+
+
+```{r, fig.width=10, fig.height=12}
+pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  group_by(cipcode) |>
+  filter(all(c("05", "07") %in% degree_level)) |>
+  ungroup() |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode) |>
+  summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE)) |>
+  arrange(desc(total_grads)) |>
+  slice_head(n = 20)
+
+top_cipcodes <- unique(pseoe_popular_cipcodes_Bach_Masters$cipcode)
+
+pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
+  filter(cipcode %in% top_cipcodes) |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode_label, degree_label) |>
+  summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+            .groups = "drop") |>
+  mutate(
+    cipcode_label = factor(
+      cipcode_label,
+      levels = pseoe |>
+              filter(cipcode %in% top_cipcodes) |>
+              filter(degree_level == "05" | degree_level == "07") |>
+              group_by(cipcode_label, degree_level) |>
+              summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+                        .groups = "drop") |>
+              pivot_wider(
+                names_from = degree_level,
+                values_from = avg_y1_p50_earnings,
+                names_prefix = "degree_"
+                ) |>
+        mutate(
+          earnings_difference = degree_07 - degree_05) |>
+        arrange(earnings_difference) |>
+        pull(cipcode_label)
+        )
+  )
+
+ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y1_p50_earnings, y=cipcode_label, color=degree_label)) +
+  geom_point(size = 3) +
+  scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
+  theme_minimal(base_size=14) +
+  labs(
+    x = "Average median earnings one year after graduation",
+    y = "Field of study",
+    title = "Average median earnings for bachelor's versus master's graduates",
+    color = "Type of degree"
+  ) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
+
 
 ```
