@@ -47,6 +47,7 @@ pseoe <- pseoe |>
     by = "institution"
   )
 ```
+
 ```{r}
 truncate_by_words <- function(label, max_length) {
   words <- strsplit(label, " ")[[1]]
@@ -405,49 +406,263 @@ Also, while its employment rate remains middling compared to the other majors, E
 
 Overall, these trends highlight how different fields of study align with various career priorities - whether it's immediate employment or sustained income growth over time. A prospective student can weigh their personal goals to select a major by these metrics.
 
-## How have career prospects changed over the past decade?
+
+
+## Growth potential: relation between y1 and y10 earnings
+
+We already saw that different types of degrees clearly result in different earnings outcomes, for one, five or ten years after graduation. Related to this, we could also look at the growth potential for different types of degrees. Here we quantify the growth potential as the relation between the earnings one year and ten years after graduation.
+
+```{r,fig.width=9, fig.height=9}
+pseoe_y1andy10 <- pseoe |>
+                  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+                  filter(status_y10_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) 
+
+ggplot(pseoe_y1andy10, aes(x = y1_p50_earnings, y = y10_p50_earnings)) +
+  geom_point(alpha=0.2) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  facet_wrap(~degree_label) +
+  labs(
+    x = "Median earnings one year after graduation",
+    y = "Median earnings ten years after graduation",
+    title = "Median earnings one versus ten years after graduation, per degree type",
+  ) +
+  theme_grey(13)
+```
+This plot shows scatterplots for median earnings one year versus ten years after graduation, one for each type of degree. In these plots, each dot represents one cohort. The red dashed line corresponds to "zero growth potential", i.e. the median earnings one and ten years after graduation is the same. We see that for all degree types, almost all cohorts have higher median earnings ten years after graduation. However, the range of magnitudes of this difference seems to depend strongly on the type of degree. The strongest growth potential seems to occur for cohorts in a professional doctoral program, where the median earnings 10 years after graduation can grow up to almost \$400,000 from around \$60,000 one year after graduation. Furthermore, bachelor's programs also allow for significant growth potential, where earnings ten years after graduation often seem to be \$100,000 higher than one year after graduation.
+
+Research doctoral and Master's programs seem to have smaller increases in earnings one to ten years after graduation than bachelor's programs, but graduates from these programs do however start with higher earnings one year after graduation. The different types of certificates and associates degrees also seem to have some growth potential, with associates degrees showing increases in earnings of up to around \$80,000.
+
+
+## Is a Master's worth it?
+
+Should I get a Master's? This is a difficult question faced by many students who obtained their undergraduate degree. Here we try to provide insights into this question by looking at the difference in earnings for bachelor's versus master's graduates in the same field of study.
+
+```{r, fig.width=10, fig.height=12}
+pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  group_by(cipcode) |>
+  filter(all(c("05", "07") %in% degree_level)) |>
+  ungroup() |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode) |>
+  summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE)) |>
+  arrange(desc(total_grads)) |>
+  slice_head(n = 20)
+
+top_cipcodes <- unique(pseoe_popular_cipcodes_Bach_Masters$cipcode)
+
+pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
+  filter(cipcode %in% top_cipcodes) |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode_label, degree_label) |>
+  summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+            .groups = "drop") |>
+  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y1_p50_earnings, .fun = mean))
+
+
+ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y1_p50_earnings, y=cipcode_label, color=degree_label)) +
+  geom_point(size = 3) +
+  labs(
+    x = "Average median earnings one year after graduation",
+    y = "Field of study",
+    title = "Average median earnings for bachelor's versus master's graduates",
+    color = "Type of degree"
+  ) +
+  theme(
+      axis.text.y = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      plot.margin = margin(t = 20, r = 10, b = 20, l = 20),
+      legend.position = "top", legend.direction = "horizontal"
+    )
+
+
+```
+
+
+```{r}
+pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  group_by(cipcode) |>
+  filter(all(c("05", "07") %in% degree_level)) |>
+  ungroup() |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode) |>
+  summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE)) |>
+  arrange(desc(total_grads)) |>
+  slice_head(n = 20)
+
+top_cipcodes <- unique(pseoe_popular_cipcodes_Bach_Masters$cipcode)
+
+pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
+  filter(cipcode %in% top_cipcodes) |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode_label, degree_label) |>
+  summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+            avg_y1_p25_earnings = mean(y1_p25_earnings, na.rm = TRUE),
+            avg_y1_p75_earnings = mean(y1_p75_earnings, na.rm = TRUE), 
+            .groups = "drop") |>
+  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y1_p50_earnings, .fun = mean)) |>
+  pivot_longer(
+    cols = c(avg_y1_p50_earnings, avg_y1_p25_earnings, avg_y1_p75_earnings),
+    names_to = "percentile",
+    values_to = "earnings"
+  )
+
+
+ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=earnings, y=cipcode_label, color=degree_label)) +
+  geom_point()
+
+
+
+```
+```{r}
+pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y5_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  group_by(cipcode) |>
+  filter(all(c("05", "07") %in% degree_level)) |>
+  ungroup() |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode) |>
+  summarize(total_grads = sum(y5_ipeds_count, na.rm = TRUE)) |>
+  arrange(desc(total_grads)) |>
+  slice_head(n = 20)
+
+top_cipcodes <- unique(pseoe_popular_cipcodes_Bach_Masters$cipcode)
+
+
+pseoe_earnings_top_cipcode_Bach_Masters <- pseoe |>
+  filter(cipcode %in% top_cipcodes) |>
+  filter(degree_level == "05" | degree_level == "07") |>
+  group_by(cipcode_label, degree_label) |>
+  summarize(avg_y5_p50_earnings = mean(y5_p50_earnings, na.rm = TRUE), .groups = "drop") |>
+  mutate(cipcode_label = fct_reorder(cipcode_label, avg_y5_p50_earnings, .fun = mean))
+
+#  left_join(cipcode_mapping |> select(cipcode, label), by = "cipcode") |>
+#  rename(cipcode_label = label) |>
+#  left_join(degree_mapping |> select(degree_level, label), by = "degree_level") |>
+#  rename(degree_label = label)
+
+ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y5_p50_earnings, y=cipcode_label, color=degree_label)) +
+  geom_point()
+
+```
+
+## How important is the institution where you earned your degree?
+
+```{r}
+library(ggplot2)
+library(ggridges)
+
+# Identify top 20 degree-CIP code combinations by total graduates
+pseoe_popular_degrees <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  group_by(degree_label, cipcode_label) |>
+  summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE), .groups = "drop") |>
+  arrange(desc(total_grads)) |>
+  slice_head(n = 20) |>
+  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - "))
+
+# Calculate median earnings for ordering
+pseoe_ridgeline_data <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - ")) |>
+  filter(cipcode_degree_label %in% pseoe_popular_degrees$cipcode_degree_label) |>
+  group_by(cipcode_degree_label, institution) |>
+  summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
+  group_by(cipcode_degree_label) |>
+  mutate(median_earnings = median(avg_y1_p50_earnings, na.rm = TRUE)) |>
+  ungroup() |>
+  arrange(desc(median_earnings)) |>
+  mutate(cipcode_degree_label = factor(cipcode_degree_label, levels = rev(unique(cipcode_degree_label))))
+
+
+# Ridgeline plot
+ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p50_earnings, y = cipcode_degree_label)) +
+  geom_density_ridges(alpha = 0.8, scale = 1.5, fill = "cornflowerblue") +
+  labs(
+    x = "Average Year 1 P50 Earnings",
+    y = "Degree field and level",
+    title = "Ridgeline Plot of Average Year 1 P50 Earnings",
+  ) +
+  theme_minimal()
+
+```
+```{r}
+# Calculate median earnings for ordering
+pseoe_ridgeline_data <- pseoe |>
+  filter(cipcode != "00") |>
+  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - ")) |>
+  filter(cipcode_degree_label %in% pseoe_popular_degrees$cipcode_degree_label) |>
+  group_by(cipcode_degree_label, institution) |>
+  summarize(avg_y1_p75_earnings = mean(y1_p75_earnings, na.rm = TRUE), .groups = "drop") |>
+  group_by(cipcode_degree_label) |>
+  mutate(median_earnings = median(avg_y1_p75_earnings, na.rm = TRUE)) |>
+  ungroup() |>
+  arrange(desc(median_earnings)) |>
+  mutate(cipcode_degree_label = factor(cipcode_degree_label, levels = rev(unique(cipcode_degree_label))))
+
+
+# Ridgeline plot
+ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p75_earnings, y = cipcode_degree_label)) +
+  geom_density_ridges(alpha = 0.8, scale = 1.5, fill = "cornflowerblue") +
+  labs(
+    x = "Average Year 1 P50 Earnings",
+    y = "Degree field and level",
+    title = "Ridgeline Plot of Average Year 1 P75 Earnings",
+    fill = "Median Earnings"
+  ) +
+  theme_minimal()
+
+```
+## How have career prospects changed?
 
 
 ```{r}
 idcols_inst <- c(
   "agg_level_pseo", "inst_level", "institution", "degree_level",
-  "cip_level", "cipcode" #, "grad_cohort", "grad_cohort_years"
+  "cip_level", "cipcode" 
 )
 
-
-```
-
-
-
-```{r}
 pseoe_01and16 <- pseoe |> 
                       filter(grad_cohort == "2001" | grad_cohort == "2016") |>
                       filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+                      filter(!institution_state %in% c("Others", "US")) |>
                       group_by(across(all_of(idcols_inst))) |>
                       filter(all(c("2001", "2016") %in% grad_cohort))
 
 pseoe_cipcode_change01to16 <- pseoe_01and16|>
                               group_by(cipcode_label, degree_label, grad_cohort) |>
-                              summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE)) |>
+                              summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
                               ungroup() |>
                               pivot_wider(names_from = grad_cohort, values_from = mean_med_earning, 
-                                          names_prefix ="earnings_") |> # Reshape data
-                              mutate(change_med_earning = earnings_2016 - earnings_2001) # Compute change
+                                          names_prefix ="earnings_") |> 
+                              mutate(change_med_earning = earnings_2016 - earnings_2001)
 
 pseoe_cipcode_change01to16 <- pseoe_cipcode_change01to16 |>
   arrange(change_med_earning) |>
-  select(cipcode_label, degree_label, change_med_earning)
-
-pseoe_cipcode_change01to16 <- pseoe_cipcode_change01to16 |>
+  select(cipcode_label, degree_label, change_med_earning) |>
   mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - "))
 
 ```
 
-
 ```{r}
-pseoe_cipcode_change01to16
+ggplot(tail(pseoe_cipcode_change01to16, 15), aes(y = factor(cipcode_degree_label,
+                                                                   levels = cipcode_degree_label[order(change_med_earning)]),
+                                                        x = change_med_earning)) +
+  geom_col() +
+  ylab("Degree field and level") +
+  xlab("Change in average median Earning from 2001 to 2016")
 ```
-
 
 
 ```{r}
@@ -455,28 +670,18 @@ ggplot(pseoe_cipcode_change01to16[1:15, ], aes(y = factor(cipcode_degree_label,
                                                                    levels = cipcode_degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
   geom_col() +
-  ylab("CIP Code Label") +
-  xlab("Change in Median Earning") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-```{r}
-ggplot(tail(pseoe_cipcode_change01to16, 15), aes(y = factor(cipcode_degree_label,
-                                                                   levels = cipcode_degree_label[order(change_med_earning)]),
-                                                        x = change_med_earning)) +
-  geom_col() +
-  ylab("CIP Code Label") +
-  xlab("Change in Year 1 Median Earning") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  ylab("Degree field and level") +
+  xlab("Change in average median Earning from 2001 to 2016")
 ```
 
 ```{r}
-pseoe_01and16 |> filter(cipcode_label == "Pharmacy, Pharmaceutical Sciences, and Administration", degree_label == "Baccalaureate")
+pseoe_01and16 |> filter(cipcode_label == "Pharmacy, Pharmaceutical...", degree_label == "Baccalaureate")
 ```
 
 ```{r}
 pseoe_typedegree_change01to16 <- pseoe_01and16 |>
                               group_by(degree_label, grad_cohort) |>
-                              summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE)) |>
+                              summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
                               ungroup() |>
                               pivot_wider(names_from = grad_cohort, values_from = mean_med_earning, 
                                           names_prefix ="earnings_") |> # Reshape data
@@ -497,27 +702,44 @@ ggplot(pseoe_typedegree_change01to16, aes(y = factor(degree_label,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-
-
-## Relation between y1 and y5 earnings
+## How does employment rate relate to earnings?
 
 ```{r}
-pseoe_y1andy10 <- pseoe |>
-                  filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
-                  filter(status_y10_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) 
-pseoe_y1andy10
+pseoe_per_degree <- pseoe |>
+                    filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+                    filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+                    group_by(cipcode_label, degree_label) |>
+                    summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE),
+                              employment_rate = sum(y1_grads_earn)/sum(y1_ipeds_count), .groups = "drop") |>
+                    filter(employment_rate < 1)
+
+ggplot(pseoe_per_degree, aes(x=employment_rate, y=avg_y1_p50_earnings)) +
+  geom_point(alpha=0.5) +
+  facet_wrap(~degree_label)
+
+```
+```{r}
+pseoe |>
+  filter(status_y1_grads_earn %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
+  filter(institution_state != "Others" & institution_state != "US") |>
+  filter(grad_cohort != "0000") |>
+  filter(cipcode != "00") |>
+  group_by(cipcode_label, degree_label) |>
+  summarize(employment_rate = sum(y1_grads_earn)/sum(y1_ipeds_count), .groups = "drop") |>
+  filter(employment_rate > 1)
 ```
 
-
-
-
+## How did graduation cohort sizes change over time?
 
 
 ```{r}
+grads_per_cohort <- pseoe |>
+        filter(grad_cohort != "0000") |>
+        group_by(grad_cohort) |>
+        summarize(avg_cohort_size = mean(y1_ipeds_count, na.rm = TRUE)) 
+ggplot(grads_per_cohort, aes(x=grad_cohort, y=avg_cohort_size)) +
+  geom_col()
 
-ggplot(pseoe_y1andy10, aes(x = y1_p50_earnings, y = y10_p50_earnings)) +
-  geom_point(alpha=0.2) +
-#  scale_fill_gradient(low="white", high="red") +
-  facet_wrap(~degree_label)
 ```
 
