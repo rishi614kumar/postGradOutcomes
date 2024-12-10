@@ -47,6 +47,18 @@ For more details on the above, see the follow resources:
 -   [PSEO Schema](https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo) (4.25, 4.36, 5.13.2, 5.14, 5.15.2, 5.16)
 -   [PSEO Data Notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf)
 
+### Data Preprocessing
+
+We modify the raw data for the sake of cleaner visualization and analysis by doing the following:
+
+-   Mapping Institution, Degree Level, and Degree Field to string values from integer IDs
+
+-   Filter out rows that contain pre-aggregated values, i.e., rows that correspond to all institutions in a particular state or all individuals across all graduate cohorts
+
+    -   We calculate aggregated values as needed ourselves
+
+-   Truncate Degree Field labels to fit in visualizations.
+
 ## Missing value analysis
 
 ```{r}

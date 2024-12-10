@@ -3,6 +3,7 @@
 In this section, we will explore several questions about the data, separated as parts.
 
 ```{r}
+suppressWarnings(suppressMessages({
 library(ggplot2)
 library(dplyr)
 suppressPackageStartupMessages(library(tidyverse))
@@ -11,8 +12,9 @@ library(ggrepel)
 library(tidyr)
 library(parcoords)
 library(htmltools)
-
+library(ggridges)
 options(ggplot2.discrete.fill.warning = FALSE)
+}))
 ```
 
 ```{r}
@@ -32,8 +34,9 @@ pseoe <- preprocess_pseoe(
 #cat("Rows:", nrow(pseoe), "\nColumns:", ncol(pseoe), "\n")
 ```
 
+## What are the top-earning fields of study within each degree type and their growth potential?
 
-## What are the top-earning fields of study within each degree type and across time?
+This analysis explores the earnings potential of various fields of study within the top-earning fields by degree type, highlighting trends across early, mid, and long-term career stages (Year 1, Year 5, Year 10). We aim to identify areas that consistently offer higher financial returns, or considerable growth, and understand how various degree types influence earning trajectories. Intuition tells us that more advanced degrees could yield better outcomes, but field-specific patterns could help influence a prospective college student's choice of major.
 
 ```{r, fig.width=10, fig.height=12}
 
@@ -84,9 +87,9 @@ suppressWarnings(
     scale_y_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
     theme_minimal(base_size =14) + 
     labs(
-      title =paste("Top", top_n, "Avg. Median Earnings by Field of Study and Degree Type") ,
+      title =paste("Top", top_n, "Average Median Earnings by Field of Study and Degree Type") ,
       x= "Field of Study",
-      y="Avg. Median Earnings (2021 US Dollars)",
+      y="Average Median Earnings (2021 US Dollars)",
       fill ="Earnings Year"
     ) +
     theme(
@@ -108,7 +111,9 @@ Certain fields stand out for disproportionately high earnings at advanced degree
 
 Furthermore, fields related to science and technology consistently dominate top-earning outcomes across all degree levels. This likely reflects the consistent demand and high value placed on specialized technical and analytical skills in the labor market. However, healthcare professionals appear to significantly increase their earning potential with advanced degrees, while engineering fields tend to show steady earning growth across all degree levels.
 
-## How do earnings compare across states and time?
+## How do earnings compare across states and career progression?
+
+For many students, location plays a crucial role in choosing a college. Some deliberately select schools in a different state from where they grew up to gain new experiences. While they may not plan to settle in the state where they attend college, it’s worth considering the earning potential in that state - particularly when evaluating opportunities for internships or entry-level positions after graduation.
 
 ```{r, fig.width=10, fig.height=12}
 
@@ -144,14 +149,14 @@ plot_df <- pseoe |>
     )
   )
 
-suppressWarnings(
+suppressWarnings(suppressMessages({suppressWarnings(
   ggplot(plot_df, aes(x = median_earnings, y = institution_state, color = year)) +
     geom_point(size = 3, position = position_dodge(width = 0.5)) +
     scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."))+
     theme_minimal(base_size = 14) +
     labs(
-      title = "Avg. Median Earnings by State",
-      x = "Avg. Median Earnings (2021 US Dollars)",
+      title = "Average Median Earnings by State",
+      x = "Average Median Earnings (2021 US Dollars)",
       y = "State",
       color = "Earnings Year"
     ) +
@@ -163,7 +168,7 @@ suppressWarnings(
       legend.position = "top", legend.direction = "horizontal"
     )
 )
-
+}))
 ```
 
 This plot shows income outcomes by state, validating the intuition that more experience generally leads to higher earnings across all states.
@@ -174,7 +179,9 @@ Notably, a large population state like New York shows a relatively low average m
 
 ## Is there a correlation between Year 1 income outcomes and employment counts by degree level?
 
-```{r, fig.width=10, fig.height=12}
+Similar to location, immediate earnings outcomes are a key consideration for many students. The question arises from this - are students more likely to choose degree paths that lead to higher initial (Year 1) earnings? If that’s the case, we would expect to see a correlation between Year 1 earnings outcomes and the number of students pursuing those higher paying degree types.
+
+```{r, fig.width=12, fig.height=12}
 
 plot_df <- pseoe |>
   group_by(degree_level, degree_label) |>
@@ -202,9 +209,9 @@ suppressWarnings(
     scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
     scale_y_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
     labs(
-      title = "Employment Counts vs. Avg. Median Earnings by Degree Type (Year 1)",
-      y = "Total Year 1 Employment Count",
-      x = "Avg. Median Earnings (2021 US Dollars)"
+      title = "Employment Counts vs. Average Median Earnings by Degree Type (Year 1)",
+      y = "Total Employment Count",
+      x = "Average Median Earnings (2021 US Dollars)"
     ) +
     theme(
       axis.text.x = element_text(size = 12),
@@ -224,6 +231,8 @@ Certificate programs (\<1 year and 1-2 years) cluster at the low end for both ea
 Masters degrees seem to balance moderate incomes and employment by occupying the middle ground. Overall, this plot clearly suggests that factors beyond immediate income, such as accessibility, cost, and career pathways, may heavily influence degree level choices.
 
 ## How does the total number of graduates compare to employed graduates by degree level, one year from graduation?
+
+To further explore the significance of degree level in shaping outcomes, we’ll examine the gap between total employed graduates and total overall graduates, broken down by degree level one year after graduation. Ideally, in a stable job market with consistent demand across all degree levels, these gaps would be relatively small, representing the portion of graduates successfully employed. However, larger gaps could indicate areas where supply exceeds demand or where degree-specific factors, like the level of specialization, impact employment outcomes. This analysis can help highlight which degree levels align more closely with immediate job market opportunities and where students might face greater challenges in securing employment shortly after their graduation.
 
 ```{r, fig.width=10, fig.height=10}
 
@@ -285,9 +294,11 @@ This plot shows the difference between total graduates and those employed one ye
 
 This discrepancy could be due to the broader applicability and generality of these degrees, which may lead to greater variability in employment outcomes. Additionally, the larger graduate populations for these degrees might create more competition in the job market, further contributing to the gaps. Also, the relatively small graduate numbers in niche fields may align better with job market demand, which would result in the higher observed employment rates.
 
-## How do employment outcomes compare across the most popular fields?
+## How do employment outcomes and growth compare across the most popular fields?
 
-```{r, fig.width=10, fig.height=12}
+For students exploring various fields of study and weighing their long-term growth potential, comparing employment outcomes across fields is essential. Normalizing the data allows us to make these comparisons more meaningful by putting different metrics, like employment rates and earnings, on the same scale. This way, we can evaluate how fields stack up relative to one another, regardless of the raw differences in magnitude, such as the sheer number of graduates or absolute income levels. Visualizing this can highlight trends and relationships that might otherwise be obscured, providing students with a clearer picture to guide their decisions.
+
+```{r, fig.width=11, fig.height=12}
 
 
 top_n <- 20
@@ -307,11 +318,13 @@ plot_df <- pseoe |>
 
 plot_df_normalized <- plot_df |>
   mutate(
-    employment_rate = scales::rescale(employment_rate),
-    avg_median_y1_income = scales::rescale(avg_median_y1_income),
-    avg_median_y5_income = scales::rescale(avg_median_y5_income),
-    avg_median_y10_income = scales::rescale(avg_median_y10_income)
-  )
+    'Total Graduates' = total_graduates,
+    'Employment Rate' = scales::rescale(employment_rate),
+    'Y1 Earnings' = scales::rescale(avg_median_y1_income),
+    'Y5 Earnings' = scales::rescale(avg_median_y5_income),
+    'Y10 Earnings' = scales::rescale(avg_median_y10_income)
+  )|>
+  select(-avg_median_y1_income, -avg_median_y5_income, -avg_median_y10_income, -total_graduates)
 
 title_text<-sprintf("Employability and Income Analysis for Top %d Historically Popular Fields of Study (Normalized)", top_n)
 title <- tags$h3(title_text)
@@ -338,7 +351,7 @@ htmltools::browsable(tagList(title, parcoords_plot))
 
 ```
 
-This plot provides an analysis of employment outcomes, including employment rates and income trajectories, for the most popular fields of study (by graduate volume).
+This plot provides an analysis of employment outcomes, including normalized employment rates and income trajectories, for the most popular fields of study (by graduate volume).
 
 Fields like Homeland Security, Business Management, and Registered Nursing show high employment rates, which make them attractive for those seeking immediate job security. However, their normalized median incomes decline over time relative to other fields, suggesting potential income stagnation for graduates in these areas.
 
@@ -348,13 +361,11 @@ Also, while its employment rate remains middling compared to the other majors, E
 
 Overall, these trends highlight how different fields of study align with various career priorities - whether it's immediate employment or sustained income growth over time. A prospective student can weigh their personal goals to select a major by these metrics.
 
-
-
-## Growth potential: relation between y1 and y10 earnings
+## What is the relation or growth potential between Year 1 and Year 10 earnings?
 
 We already saw that different types of degrees clearly result in different earnings outcomes, for one, five or ten years after graduation. Related to this, we could also look at the growth potential for different types of degrees. Here we quantify the growth potential as the relation between the earnings one year and ten years after graduation.
 
-```{r,fig.width=9, fig.height=9}
+```{r,fig.width=10, fig.height=9}
 pseoe_y1andy10 <- pseoe |>
                   filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
                   filter(status_y10_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) 
@@ -366,22 +377,22 @@ ggplot(pseoe_y1andy10, aes(x = y1_p50_earnings, y = y10_p50_earnings)) +
   scale_y_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
   facet_wrap(~degree_label) +
   labs(
-    x = "Median earnings one year after graduation",
-    y = "Median earnings ten years after graduation",
-    title = "Median earnings one versus ten years after graduation, per degree type",
+    x = "Year 1 Median Earnings (2021 US Dollars)",
+    y = "Year 10 Median Earnings (2021 Us Dollars)",
+    title = "Year 1 Median Earnings and Year 10 Median Earnings by Degree Type",
   ) +
   theme_minimal(base_size=14)
 ```
+
 This plot shows scatterplots for median earnings one year versus ten years after graduation, one for each type of degree. In these plots, each dot represents one cohort. The red dashed line corresponds to "zero growth potential", i.e. the median earnings one and ten years after graduation is the same. We see that for all degree types, almost all cohorts have higher median earnings ten years after graduation. However, the range of magnitudes of this difference seems to depend strongly on the type of degree. The strongest growth potential seems to occur for cohorts in a professional doctoral program, where the median earnings 10 years after graduation can grow up to almost \$400,000 from around \$60,000 one year after graduation. Furthermore, bachelor's programs also allow for significant growth potential, where earnings ten years after graduation often seem to be \$100,000 higher than one year after graduation.
 
 Research doctoral and Master's programs seem to have smaller increases in earnings one to ten years after graduation than bachelor's programs, but graduates from these programs do however start with higher earnings one year after graduation. The different types of certificates and associates degrees also seem to have some growth potential, with associates degrees showing increases in earnings of up to around \$80,000.
-
 
 ## Is a Master's worth it?
 
 Should I get a Master's? This is a difficult question faced by many students who obtained their undergraduate degree. Here we try to provide insights into this question by looking at the difference in earnings for bachelor's versus master's graduates in the same field of study.
 
-```{r, fig.width=10, fig.height=16}
+```{r, fig.width=11, fig.height=16}
 pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
   filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
   group_by(cipcode) |>
@@ -419,10 +430,10 @@ ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y1_p50_earnings, y=cip
                      limits = c(0, 110000)) +
   theme_minimal(base_size=14) +
   labs(
-    x = "Average median earnings one year after graduation",
+    x = "Year 1 Average Median Earnings (2021 US Dollars)",
     y = "Field of study",
-    title = "Average median earnings for bachelor's versus master's graduates",
-    color = "Type of degree"
+    title = "Average Median Earnings for Baccalaureate v.s. Masters Graduates",
+    color = "Degree Level"
   ) +
   theme(
       axis.text.y = element_text(size = 10),
@@ -434,10 +445,10 @@ ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y1_p50_earnings, y=cip
 
 
 ```
-This plot shows the average median earnings, one year after graduation, for the twenty most popular fields of study for which both Bachelor's and Master's programs are available. We see that for all of these fields, the average median earnings is always highest for the master's program. The magnitude of the difference depends on the specific field, where we see a difference of almost \$30,000 for business and management degrees and of more than \$20,000 for computer and information degrees. For engineering degrees a Master's degree only increases the average median earnings from about \$63,000 to around \$75,000, which is a small relative increase of around 20% For other degree's such as history, psychology and English language, the absolute difference is also around \$10,000 but still corresponds to a relative change of about 33%. 
 
-This graph seems to indicate that a Master's degree is indeed worth it, as it significantly increases median earnings one year after graduation. However, it does not take into account the cost of a Master's degree, both from a financial perspective and a time perspective. Completing a Master's degree requires a significant financial investment and the devoted time can also be used to gain work experience and progress your career, which might perhaps lead to higher earnings. Furthermore, this analysis also does not take into account at which stage in their career graduates are. Master's students often already have several years of work experience before starting the program, which might automatically lead to higher earnings after completing the program. 
+This plot shows the average median earnings, one year after graduation, for the twenty most popular fields of study for which both Bachelor's and Master's programs are available. We see that for all of these fields, the average median earnings is always highest for the master's program. The magnitude of the difference depends on the specific field, where we see a difference of almost \$30,000 for business and management degrees and of more than \$20,000 for computer and information degrees. For engineering degrees a Master's degree only increases the average median earnings from about \$63,000 to around \$75,000, which is a small relative increase of around 20% For other degree's such as history, psychology and English language, the absolute difference is also around \$10,000 but still corresponds to a relative change of about 33%.
 
+This graph seems to indicate that a Master's degree is indeed worth it, as it significantly increases median earnings one year after graduation. However, it does not take into account the cost of a Master's degree, both from a financial perspective and a time perspective. Completing a Master's degree requires a significant financial investment and the devoted time can also be used to gain work experience and progress your career, which might perhaps lead to higher earnings. Furthermore, this analysis also does not take into account at which stage in their career graduates are. Master's students often already have several years of work experience before starting the program, which might automatically lead to higher earnings after completing the program.
 
 ```{r, fig.width=10, fig.height=16}
 pseoe_popular_cipcodes_Bach_Masters <- pseoe |>
@@ -476,10 +487,10 @@ ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y5_p50_earnings, y=cip
                      limits = c(0, 110000)) +
   theme_minimal(base_size=14) +
   labs(
-    x = "Average median earnings five years after graduation",
+    x = "Year 5 Average Median Earnings (2021 US Dollars)",
     y = "Field of study",
-    title = "Average median earnings for bachelor's versus master's graduates",
-    color = "Type of degree"
+    title = "Average Median Earnings for Baccalaureate v.s. Masters Graduates",
+    color = "Degree Level"
   ) +
   theme(
       axis.text.y = element_text(size = 10),
@@ -490,15 +501,15 @@ ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=avg_y5_p50_earnings, y=cip
     )
 
 ```
-This plot then again shows the average median earnings for both Bachelor's and Master's programs, but now five years after graduation. We see again that the Master's programs lead to higher average median earnings. However, when closely comparing the two graphs, we see that for lower earning fields such as English language and history, the gap between Master's and Bachelor's graduates seems to have slightly tightened. For higher earning field such as Computer and Engineering however, the gap seems to have slightly widened.
 
+This plot then again shows the average median earnings for both Bachelor's and Master's programs, but now five years after graduation. We see again that the Master's programs lead to higher average median earnings. However, when closely comparing the two graphs, we see that for lower earning fields such as English language and history, the gap between Master's and Bachelor's graduates seems to have slightly tightened. For higher earning field such as Computer and Engineering however, the gap seems to have slightly widened.
 
 ## How important is the institution where you earned your degree?
 
-We all know that institutions have significant differences in reputation and (at least perceived) quality of education. However, we might ask ourselves how this translates into measurable outcomes such as earnings after graduation. 
+We all know that institutions have significant differences in reputation and (at least perceived) quality of education. However, we might ask ourselves how this translates into measurable outcomes such as earnings after graduation.
 
 ```{r, fig.width=10, fig.height=16}
-library(ggridges)
+
 
 # Identify top 20 degree-CIP code combinations by total graduates
 pseoe_popular_degrees <- pseoe |>
@@ -509,14 +520,14 @@ pseoe_popular_degrees <- pseoe |>
   summarize(total_grads = sum(y1_ipeds_count, na.rm = TRUE), .groups = "drop") |>
   arrange(desc(total_grads)) |>
   slice_head(n = 20) |>
-  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - "))
+  mutate(cipcode_degree_label = paste(degree_label, cipcode_label, sep = " - "))
 
 # Calculate median earnings for ordering
 pseoe_ridgeline_data <- pseoe |>
   filter(cipcode != "00") |>
   filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
   filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
-  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - ")) |>
+  mutate(cipcode_degree_label = paste(degree_label, cipcode_label, sep = " - ")) |>
   filter(cipcode_degree_label %in% pseoe_popular_degrees$cipcode_degree_label) |>
   group_by(cipcode_degree_label, institution) |>
   summarize(avg_y1_p50_earnings = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
@@ -533,9 +544,9 @@ suppressMessages(suppressWarnings(ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p5
   scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."),
                      limits = c(0, 150000)) +
   labs(
-    x = "Median earnings one year after graduation",
-    y = "Degree field and level",
-    title = "Distribution of median earnings over institutions,\n one year after graduation",
+    x = "Year 1 Median Earnings (2021 US Dollars)",
+    y = "Degree Level & Field",
+    title = "Distribution of Year 1 Median Earnings over Institutions,\n by Degree Level & Field",
   ) +
   theme_minimal(base_size=14) +
   theme(
@@ -548,11 +559,12 @@ suppressMessages(suppressWarnings(ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p5
     )))
 
 ```
+
 This ridgeline plot shows how the median earnings one year after graduation are distributed over institutions offering these degrees. These distributions are shown for the top 20 most popular degrees in the dataset. We see that the shape of the distribution varies strongly depending on the specific degree. For example, for a Master's in Business and management or a Bachelor's in Health Professions, the distribution is widely spread. This indicates that for these degrees, the institution does matter significantly, as different institutions correspond to strongly differing median earnings.
 
 However, for other degrees such as a Bachelor's in English Language or Psychology, and to a smaller extent a Bachelor's in Engineering, the distribution is much more tightly spread. Therefore for these degrees, the awarding institution seems to have a smaller impact on earnings outcomes.
 
-In general, the graph also seems to exhibit a trend where higher earning degrees tend to have a more widely spread distribution. 
+In general, the graph also seems to exhibit a trend where higher earning degrees tend to have a more widely spread distribution.
 
 ```{r, fig.width=10, fig.height=16}
 # Calculate median earnings for ordering
@@ -560,7 +572,7 @@ pseoe_ridgeline_data <- pseoe |>
   filter(cipcode != "00") |>
   filter(status_y1_earnings %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
   filter(status_y1_ipeds_count %in% c(1, 2, 4, 6, 7, 9, 10, 12)) |>
-  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - ")) |>
+  mutate(cipcode_degree_label = paste(degree_label, cipcode_label, sep = " - ")) |>
   filter(cipcode_degree_label %in% pseoe_popular_degrees$cipcode_degree_label) |>
   group_by(cipcode_degree_label, institution) |>
   summarize(avg_y1_p75_earnings = mean(y1_p75_earnings, na.rm = TRUE), .groups = "drop") |>
@@ -577,9 +589,9 @@ suppressMessages(suppressWarnings(ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p7
   scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = "."),
                      limits = c(0, 150000)) +
   labs(
-    x = "75th percentile earnings one year after graduation",
-    y = "Degree field and level",
-    title = "Distribution of 75th percentile earnings over institutions,\n one year after graduation",
+    x = "Year 1 75th Percentile Earnings (2021 US Dollars)",
+    y = "Degree Level & Field",
+    title = "Distribution of Year 1 75th Percentile Earnings over Institutions,\n by Degree Level & Field",
   ) +
   theme_minimal(base_size=14) +
   theme(
@@ -593,16 +605,16 @@ suppressMessages(suppressWarnings(ggplot(pseoe_ridgeline_data, aes(x = avg_y1_p7
 
 
 ```
+
 This ridgeline plot then shows the distribution of the 75th percentile of earnings one year after graduation over different institutions. We see similar trends as in the previous graph, where the same degrees as before seem to have more widely spread distributions. However, in general we observe that for each degree the 75th percentile earnings are more widely spread than the median earnings. This indicates that the awarding institution seems to be more important when considering the possibility for high earnings outcomes.
 
 ## How have career prospects changed?
 
 The job market is ever-changing. Degrees in fields that led to high paying jobs twenty years ago might not do so presently, while other degrees might have seen a big increase in earnings. In this section, we look at how average median earnings for different degrees have changed from 2001 and 2016, which correspond to the earliest and most recent graduation cohorts in the dataset.
 
-In an attempt to eliminate any bias that is present in the dataset due to incomplete reporting, we performed matching of cohorts from 2001 to cohorts of 2016. Specifically, for each cohort that graduated in 2001 from a certain institution with a certain degree,there is exactly one cohort that graduated from the same institution with the same degree in 2016, and vice-versa. This makes sure that when we are comparing earnings outcomes for a certain degree in 2001 versus 2016, we are doing so for the same institutions awarding the degree. 
+In an attempt to eliminate any bias that is present in the dataset due to incomplete reporting, we performed matching of cohorts from 2001 to cohorts of 2016. Specifically, for each cohort that graduated in 2001 from a certain institution with a certain degree,there is exactly one cohort that graduated from the same institution with the same degree in 2016, and vice-versa. This makes sure that when we are comparing earnings outcomes for a certain degree in 2001 versus 2016, we are doing so for the same institutions awarding the degree.
 
-
-```{r}
+```{r, fig.width=11, fig.height=10}
 idcols_inst <- c(
   "agg_level_pseo", "inst_level", "institution", "degree_level",
   "cip_level", "cipcode" 
@@ -633,21 +645,18 @@ pseoe_cipcode_change01to16 <- pseoe_01and16 |>
 pseoe_cipcode_change01to16 <- pseoe_cipcode_change01to16 |>
   arrange(change_med_earning) |>
   select(cipcode_label, degree_label, change_med_earning) |>
-  mutate(cipcode_degree_label = paste(cipcode_label, degree_label, sep = " - "))
-
-```
+  mutate(cipcode_degree_label = paste( degree_label, cipcode_label, sep = " - "))
 
 
-```{r, fig.width=10, fig.height=10}
 ggplot(tail(pseoe_cipcode_change01to16, 15), aes(y = factor(cipcode_degree_label,
                                                                    levels = cipcode_degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
   geom_col(fill = "cornflowerblue") +
   scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
   labs(
-    x = "Change in average median earnings one year after graduation,\n (2001 to 2016)",
-    y = "Degree field and level",
-    title = "Degrees with highest increase in average median earnings,\n (2001 to 2016)",
+    x = "Change in Average Year 1 Median Earnings,\n (2021 US Dollars)",
+    y = "Degree Level & Field",
+    title = "Degrees with Largest Increase in Average Year 1 Median Earnings,\n (2001 to 2016)",
   ) +
   theme_minimal(base_size=14) +
   theme(
@@ -658,21 +667,20 @@ ggplot(tail(pseoe_cipcode_change01to16, 15), aes(y = factor(cipcode_degree_label
       legend.position = "top", legend.direction = "horizontal",
       plot.title = element_text(hjust = 0.5)
     )
-
 ```
+
 This plot shows the 15 degrees with the highest increase in average median earnings one year after graduation from 2001 to 2016. We see that a research doctorate in Computer and Information has seen the biggest increase of \$30,000. Also other computer-related degrees such as a Bachelor's in computer engineering, computer/information and computer science make the top 15, where these have seen an increase of around \$12,000. A bachelor's in statistics has seen the second biggest and a research doctorate in business and management the third biggest increase of around \$20,000 and \$15,000 respectively.
 
-
-```{r, fig.width=10, fig.height=10}
+```{r, fig.width=11, fig.height=10}
 ggplot(pseoe_cipcode_change01to16[1:15, ], aes(y = factor(cipcode_degree_label,
                                                                    levels = cipcode_degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
   geom_col(fill = "cornflowerblue") +
   scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
   labs(
-    x = "Change in average median earnings one year after graduation,\n (2001 to 2016)",
-    y = "Degree field and level",
-    title = "Degrees with highest decrease in average median earnings,\n (2001 to 2016)",
+    x = "Change in Average Year 1 Median Earnings,\n (2021 US Dollars)",
+    y = "Degree Level & Field",
+    title = "Degrees with Largest Decrease in Average Year 1 Median Earnings,\n (2001 to 2016)",
   ) +
   theme_minimal(base_size=14) +
   theme(
@@ -685,9 +693,12 @@ ggplot(pseoe_cipcode_change01to16[1:15, ], aes(y = factor(cipcode_degree_label,
     )
 ```
 
-This plot then shows the degrees with the highest decrease in average median earnings one year after graduation from 2001 to 2016. We see that according to this dataset, a bachelor's in Pharmacy and Pharmaceutical sciences has seen the most drastic decreas of around \$70,000. However, when we examined the data more closely, we saw that this decrease is calculated from only 3 cohorts in both 2001 and 2016, which might be a too small sample to make any hard conclusions. We do however also see a big decrease of around \$25,000 for a professional doctorate in Pharmacy and Pharmaceutical sciences, where this does correspond to a significant sample size of 21 cohorts. 
+This plot then shows the degrees with the highest decrease in average median earnings one year after graduation from 2001 to 2016. We see that according to this dataset, a bachelor's in Pharmacy and Pharmaceutical sciences has seen the most drastic decreas of around \$70,000. However, when we examined the data more closely, we saw that this decrease is calculated from only 3 cohorts in both 2001 and 2016, which might be a too small sample to make any hard conclusions. We do however also see a big decrease of around \$25,000 for a professional doctorate in Pharmacy and Pharmaceutical sciences, where this does correspond to a significant sample size of 21 cohorts.
 
-```{r}
+We also see a big decrease of around \$30,000 for a research doctorate in Architecture and a decrease of around \$25,000 for an associates degree in Apparel and Textiles.
+
+```{r, fig.width=11, fig.height=6}
+
 pharmacy_01and16_bac <- pseoe_01and16 |>
                     filter(cipcode_label == "Pharmacy, Pharmaceutical...", degree_label == "Baccalaureate")
 stopifnot(nrow(pharmacy_01and16_bac) == 3+3)
@@ -696,12 +707,6 @@ pharmacy_01and16_doct <- pseoe_01and16 |>
                     filter(cipcode_label == "Pharmacy, Pharmaceutical...", degree_label == "Doctoral - Prof.")
 stopifnot(nrow(pharmacy_01and16_doct) == 21+21)
 
-```
-
-We also see a big decrease of around \$30,000 for a research doctorate in Architecture and a decrease of around \$25,000 for an associates degree in Apparel and Textiles.
-
-
-```{r}
 pseoe_typedegree_change01to16 <- pseoe_01and16 |>
                               group_by(degree_label, grad_cohort) |>
                               summarise(mean_med_earning = mean(y1_p50_earnings, na.rm = TRUE), .groups = "drop") |>
@@ -713,18 +718,16 @@ pseoe_typedegree_change01to16 <- pseoe_01and16 |>
 pseoe_typedegree_change01to16 <- pseoe_typedegree_change01to16 |>
   arrange(change_med_earning) |>
   select(degree_label, change_med_earning)
-```
 
-```{r, fig.width=10, fig.height=6}
 ggplot(pseoe_typedegree_change01to16, aes(y = factor(degree_label,
                                                                    levels = degree_label[order(change_med_earning)]),
                                                         x = change_med_earning)) +
   geom_col(fill = "cornflowerblue") +
   scale_x_continuous(labels = scales::label_number(big.mark = ",", decimal.mark = ".")) +
   labs(
-    x = "Change in average median earnings one year after graduation,\n (2001 to 2016)",
-    y = "Degree level",
-    title = "Change in average median earnings per degree level,\n (2001 to 2016)",
+    x = "Change in Average Year 1 Median Earnings,\n (2001 to 2016)",
+    y = "Degree Level & Field",
+    title = "Change in Average Year 1 Median Earnings by Degree Level,\n (2021 US Dollars)",
   ) +
   theme_minimal(base_size=14) +
   theme(
@@ -768,9 +771,7 @@ pseoe |>
   filter(employment_rate > 1)
 ```
 
-
 ## How did graduation cohort sizes change over time?
-
 
 ```{r}
 grads_per_cohort <- pseoe |>
@@ -781,6 +782,7 @@ ggplot(grads_per_cohort, aes(x=grad_cohort, y=avg_cohort_size)) +
   geom_col()
 
 ```
+
 ## Some unused code
 
 ```{r}
@@ -820,7 +822,6 @@ ggplot(pseoe_earnings_top_cipcode_Bach_Masters, aes(x=earnings, y=cipcode_label,
 
 
 ```
-
 
 ```{r, fig.width=10, fig.height=12}
 pseoe_popular_cipcodes_Bach_Masters <- pseoe |>

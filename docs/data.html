@@ -190,6 +190,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#data-format" id="toc-data-format" class="nav-link" data-scroll-target="#data-format"><span class="header-section-number">2.1.3</span> Data Format</a></li>
   <li><a href="#data-coverage" id="toc-data-coverage" class="nav-link" data-scroll-target="#data-coverage"><span class="header-section-number">2.1.4</span> Data Coverage</a></li>
   <li><a href="#data-referencesdocumentation" id="toc-data-referencesdocumentation" class="nav-link" data-scroll-target="#data-referencesdocumentation"><span class="header-section-number">2.1.5</span> Data References/Documentation</a></li>
+  <li><a href="#data-preprocessing" id="toc-data-preprocessing" class="nav-link" data-scroll-target="#data-preprocessing"><span class="header-section-number">2.1.6</span> Data Preprocessing</a></li>
   </ul></li>
   <li><a href="#missing-value-analysis" id="toc-missing-value-analysis" class="nav-link" data-scroll-target="#missing-value-analysis"><span class="header-section-number">2.2</span> Missing value analysis</a></li>
   </ul>
@@ -263,6 +264,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><a href="https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf">PSEO Technical Documentation</a> (Technical Details, Data Collection, Rationale)</li>
 <li><a href="https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html#_identifiers_for_pseo">PSEO Schema</a> (4.25, 4.36, 5.13.2, 5.14, 5.15.2, 5.16)</li>
 <li><a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO Data Notices</a></li>
+</ul>
+</section>
+<section id="data-preprocessing" class="level3" data-number="2.1.6">
+<h3 data-number="2.1.6" class="anchored" data-anchor-id="data-preprocessing"><span class="header-section-number">2.1.6</span> Data Preprocessing</h3>
+<p>We modify the raw data for the sake of cleaner visualization and analysis by doing the following:</p>
+<ul>
+<li><p>Mapping Institution, Degree Level, and Degree Field to string values from integer IDs</p></li>
+<li><p>Filter out rows that contain pre-aggregated values, i.e., rows that correspond to all institutions in a particular state or all individuals across all graduate cohorts</p>
+<ul>
+<li>We calculate aggregated values as needed ourselves</li>
+</ul></li>
+<li><p>Truncate Degree Field labels to fit in visualizations.</p></li>
 </ul>
 </section>
 </section>
