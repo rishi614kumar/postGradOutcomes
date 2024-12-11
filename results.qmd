@@ -327,13 +327,14 @@ plot_df <- pseoe |>
 
 plot_df_normalized <- plot_df |>
   mutate(
+    'Degree Field' = cipcode_label,
     'Total Graduates' = total_graduates,
     'Employment Rate' = scales::rescale(employment_rate),
     'Y1 Earnings' = scales::rescale(avg_median_y1_income),
     'Y5 Earnings' = scales::rescale(avg_median_y5_income),
     'Y10 Earnings' = scales::rescale(avg_median_y10_income)
   )|>
-  select(-avg_median_y1_income, -avg_median_y5_income, -avg_median_y10_income, -total_graduates)
+  select(-avg_median_y1_income, -avg_median_y5_income, -avg_median_y10_income, -total_graduates, -employment_rate, -cipcode_label)
 
 title_text<-sprintf("Employability and Income Analysis for Top %d Historically Popular Fields of Study (Normalized)", top_n)
 title <- tags$h3(title_text)
@@ -343,7 +344,7 @@ parcoords_plot <- parcoords(
   data = plot_df_normalized,
   rownames = FALSE,
   brushMode = "1D-axes",
-  color = list(colorBy = "cipcode_label", colorScale = "scaleOrdinal", colorScheme = "schemeCategory10"),
+  color = list(colorBy = "Degree Field", colorScale = "scaleOrdinal", colorScheme = "schemeCategory10"),
   alpha = 0.5,
   withD3 = TRUE,
   #width = 1000,
@@ -360,7 +361,7 @@ htmltools::browsable(tagList(title, parcoords_plot))
 
 ```
 
-This plot provides an analysis of employment outcomes, including normalized employment rates and income trajectories, for the most popular fields of study (by graduate volume).
+This interactive plot provides an analysis of employment outcomes, including normalized employment rates and income trajectories, for the most popular fields of study (by graduate volume). Selections can be made on the plot to trace the paths of individual or groups of fields.
 
 Fields like Homeland Security / Law Enforcement, Business Management, and Registered Nursing show high employment rates, which make them attractive for those seeking immediate job security. However, their normalized median incomes decline over time relative to other fields which suggests potential income stagnation for graduates in these areas.
 
