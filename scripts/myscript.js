@@ -190,7 +190,8 @@ const df = [
 ];
     const x_scale = d3.scaleLinear().range([0, chart_width * 0.75]) //text issue - scale it
     const y_scale = d3.scaleBand().range([0, chart_height]).padding(0.1)
-    const color_scale = d3.scaleOrdinal(d3.schemeCategory10)
+    const color_scale = d3.scaleOrdinal().domain(df.map(row => row.cipcode_label)).range(df.map((_, i) => d3.hsl((i * 30) % 360, 0.5, 0.7).toString())); // modify hue saturation brightness
+    //d3.scaleOrdinal(d3.schemeCategory10)
 
     const year_list = [...new Set(df.map(row => row.grad_cohort))].sort()
     console.log("years:", year_list)
@@ -268,6 +269,22 @@ console.log(document.getElementById("pause"))
             button.textContent = "Play";
             clearTimeout(animation_timeout); 
         }
+    });
+    
+    document.getElementById("left").addEventListener("click", () => {
+        clearTimeout(animation_timeout);
+        animation_running = false;
+        document.getElementById("pause").textContent = "Play";
+        current_year_idx = (current_year_idx - 1 + year_list.length) % year_list.length;
+        draw_chart(current_year_idx);
+    });
+
+    document.getElementById("right").addEventListener("click", () => {
+        clearTimeout(animation_timeout);
+        animation_running = false;
+        document.getElementById("pause").textContent = "Play";
+        current_year_idx = (current_year_idx + 1) % year_list.length;
+        draw_chart(current_year_idx);
     });
 
     run_animation();

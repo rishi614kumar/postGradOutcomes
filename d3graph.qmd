@@ -1,5 +1,11 @@
 # Interactive graph
 
+```{=html}
+<p></p>
+```
+
+Now that we’ve examined how factors like location, institution, field of study, degree level, and time influence employment outcomes, another key question has emerged - what are the most popular fields of study over time? Understanding these trends can provide valuable context for how student interests and societal demands have shifted. This can offer insights into how higher education continues to adapt to an evolving job market and world.
+
 ::: {style="text-align: center; font-size: 24px; font-weight: bold;"}
 ```         
 Trends in Popular Fields of Study: Graduation Counts Over Time
@@ -24,13 +30,16 @@ Trends in Popular Fields of Study: Graduation Counts Over Time
     fill: gray;
     text-anchor: end;
   }
-  button#pause {
-  display: block;
-  margin: 10px auto; 
+   #button-container {
+    display: flex; 
+    justify-content: center; 
+    gap: 10px;
+  }
+button {
   padding: 10px 20px;
   font-size: 16px;
   border-radius: 5px;
-  position: relative; 
+  cursor: pointer;
 }
 #plot-container {
   text-align: center; 
@@ -40,12 +49,18 @@ Trends in Popular Fields of Study: Graduation Counts Over Time
 </style>
 ```
 
-:::: {#plot-container}
+::::: {#plot-container}
 ::: {#plot}
 :::
 
+::: button-container
+```{=html}         
+<button id="left" type="button">⬅</button>
 <button id="pause" type="button">Pause</button>
-::::
+<button id="right" type="button">➡</button>
+```
+:::
+:::::
 
 ```{=html}
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -55,6 +70,10 @@ Trends in Popular Fields of Study: Graduation Counts Over Time
 <script src="scripts/myscript.js"></script>
 ```
 
-This interactive graph shows trends in the most popular fields of study based on graduation counts over time. The pause button can be clicked to pause the visualization at any displayed year.
+```{=html}
+<p></p>
+```
 
-These trends reflect societal priorities and workforce demands during different periods. For example, Healthcare fields show consistency, likely due to a steady demand for medical professionals, as seen in our previous analyses as well, since healthcare is always needed. Liberal Arts/Sciences show a rise, possibly because of their broad appeal and flexibility for students who are undecided about a specific career path. The prominence of Business-related fields highlights their alignment with job market demands and strong career outcomes, also how we've seen in our previous analyses. Interestingly, technology-related fields like Computer and Information Sciences show significant variation, frequently entering and leaving the top 10. This could be because the positive perceptions of the technology industry did not have its massive increase until the mid 2010s. If our data extended into more recent years, we likely could see similar tech-related fields ranking much higher, such as fields like Data Science, since many universities have started those programs recently.
+This interactive graph shows trends in the most popular fields of study based on graduation counts over time at a national level. The pause button can be clicked to pause the visualization at any displayed year. The left and right arrows will move you backward and forwards through the animation respectively. Please note that you may have to maximize your browser window to view the entire visualization.
+
+These trends reflect societal priorities and workforce demands during different periods. For example, Healthcare fields show consistency, likely due to a steady demand for medical professionals, as seen in our previous analyses as well, since healthcare is always needed. Liberal Arts/Sciences show a rise, possibly because of their broad appeal and flexibility for students who are undecided about a specific career path. The prominence of Business-related fields highlights their alignment with job market demands and strong career outcomes, also how we've seen in our previous analyses. Interestingly, technology-related fields like Computer and Information Sciences show significant variation, frequently entering and leaving the top 20. This could be because the positive perceptions of the technology industry did not have its massive increase until the mid 2010s. If our data extended into more recent years, we likely could see similar tech-related fields ranking much higher, such as fields like Data Science, since many universities have started those programs recently.
