@@ -11,6 +11,13 @@ For the reasons above, we have focused on this Post-Secondary Employment Outcome
 - How does the total number of graduates compare to employed graduates by degree level, one year from graduation?
 - How do employment outcomes compare across the most popular fields?
 - What are the most popular fields of study over time?
+- What is the relation or growth potential between Year 1 and Year 10 earnings?
+- Is a Masters worth it?
+- How important is the institution where you earned your degree?
+- How have career prospects changed over time?
+
+
+
 
 ### References
 1. [Census Bureau, Educational Attainment](https://www.census.gov/data/tables/2018/demo/education-attainment/cps-detailed-tables.html)
