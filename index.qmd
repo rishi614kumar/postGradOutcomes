@@ -6,17 +6,15 @@ With over 60% of Americans having attended college and enrollment numbers increa
 For the reasons above, we have focused on this Post-Secondary Employment Outcomes topic. This project will explore the following general questions:
 
 - What are the top-earning fields of study within each degree type and across time?
-- How do earnings compare across states and time?
+- How do earnings compare across states?
 - Is there a correlation between Year 1 income outcomes and employment counts by degree level?
-- How does the total number of graduates compare to employed graduates by degree level, one year from graduation?
+- How does the total number of graduates compare to employed graduates by degree level?
 - How do employment outcomes compare across the most popular fields?
-- What are the most popular fields of study over time?
-- What is the relation or growth potential between Year 1 and Year 10 earnings?
+- What is the growth potential for different degree levels?
 - Is a Masters worth it?
 - How important is the institution where you earned your degree?
 - How have career prospects changed over time?
-
-
+- What are the most popular fields of study over time?
 
 
 ### References

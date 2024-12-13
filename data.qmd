@@ -10,7 +10,7 @@ The national and state-level PSEO datasets are publicly available through the [U
 
 ### Data Collection
 
-The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.
+The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges administrative job data with the post-secondary education records from its partners to create the PSEO datasets.
 
 ### Data Format
 
@@ -36,6 +36,8 @@ The main identifiers in the dataset and their respective mapping ID to string ma
 The data covers the years from 2001 to 2016 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the [PSEO data notices](https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf) for their updates.
 
 **Limitations**: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found on [this webpage](https://lehd.ces.census.gov/data/pseo_experimental.html).
+
+Therefore, the provided dataset is only a sample of all graduating students, so we have to be aware that there might be an implicit bias in the dataset. This means that some results obtained in this analysis might not apply when considering the whole population of graduating students. However, as there is still enough data for most degrees and cohorts, and we try to control for this bias where possible, our analysis can still act as a baseline for students for educational and career guidance.
 
 ### Data References/Documentation
 
@@ -65,9 +67,6 @@ We modify the raw data for the sake of cleaner visualization and analysis by doi
 suppressPackageStartupMessages(library(tidyverse))
 
 pseoe <- read_csv("data/pseoe_all.csv", show_col_types = FALSE)
-#pseof <- read_csv("data/pseof_all.csv", show_col_types = FALSE)
-#head(pseoe)
-#head(pseof)
 
 ```
 

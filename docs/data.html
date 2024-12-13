@@ -227,7 +227,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-collection" class="level3" data-number="2.1.2">
 <h3 data-number="2.1.2" class="anchored" data-anchor-id="data-collection"><span class="header-section-number">2.1.2</span> Data Collection</h3>
-<p>The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges admistrative job data with the post-secondary education records from its partners to create the PSEO datasets.</p>
+<p>The data is collected through the Longitudinal Employer-Household Dynamics (LEHD) program. This program partners with various post-secondary institutions, state agencies, and the United States Census Bureau. LEHD merges administrative job data with the post-secondary education records from its partners to create the PSEO datasets.</p>
 </section>
 <section id="data-format" class="level3" data-number="2.1.3">
 <h3 data-number="2.1.3" class="anchored" data-anchor-id="data-format"><span class="header-section-number">2.1.3</span> Data Format</h3>
@@ -254,6 +254,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="2.1.4" class="anchored" data-anchor-id="data-coverage"><span class="header-section-number">2.1.4</span> Data Coverage</h3>
 <p>The data covers the years from 2001 to 2016 as of the 2023Q20 release. New data for additional partner institutions is added irregularly, such as the June 2024 update that incorporated new universities. See the <a href="https://lehd.ces.census.gov/doc/PSEO_data_notices.pdf">PSEO data notices</a> for their updates.</p>
 <p><strong>Limitations</strong>: There are regional coverage gaps in the dataset because it only includes outcomes from institutions that have partnered with the Census Bureau through data-sharing agreements. For that reason, many states have no coverage while most others only have partial coverage. Breakdown of state-by-state coverage can be found on <a href="https://lehd.ces.census.gov/data/pseo_experimental.html">this webpage</a>.</p>
+<p>Therefore, the provided dataset is only a sample of all graduating students, so we have to be aware that there might be an implicit bias in the dataset. This means that some results obtained in this analysis might not apply when considering the whole population of graduating students. However, as there is still enough data for most degrees and cohorts, and we try to control for this bias where possible, our analysis can still act as a baseline for students for educational and career guidance.</p>
 </section>
 <section id="data-referencesdocumentation" class="level3" data-number="2.1.5">
 <h3 data-number="2.1.5" class="anchored" data-anchor-id="data-referencesdocumentation"><span class="header-section-number">2.1.5</span> Data References/Documentation</h3>
@@ -286,10 +287,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(tidyverse))</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pseoe <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/pseoe_all.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#pseof &lt;- read_csv("data/pseof_all.csv", show_col_types = FALSE)</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#head(pseoe)</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#head(pseof)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pseoe <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/pseoe_all.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>When looking at the missing values in the dataset, we see that they only appear in the data columns (as described in section 2.1.3). The id and status columns contain no missing values.</p>
