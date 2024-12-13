@@ -3,10 +3,10 @@ const margins = {top: 20, right: 50, bottom: 60, left: 25}
 const chart_width = 1300 - margins.left - margins.right
 const chart_height = 700 - margins.top - margins.bottom
 
-const chart_svg = d3.select("#plot").append("svg")
+const chart_svg = d3.select("div#plot").append("svg")
     .attr("width", chart_width + margins.left + margins.right)
     .attr("height", chart_height + margins.top + margins.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", `translate(${margins.left},${margins.top})`)
 
 const year_text = chart_svg.append("text")
@@ -192,10 +192,17 @@ const df = [
     const y_scale = d3.scaleBand().range([0, chart_height]).padding(0.1)
     const color_scale = d3.scaleOrdinal().domain(df.map(row => row.cipcode_label)).range(df.map((_, i) => d3.hsl((i * 30) % 360, 0.5, 0.7).toString())); // modify hue saturation brightness
     //d3.scaleOrdinal(d3.schemeCategory10)
+    
+    const xAxis = d3.axisBottom().scale(x_scale);
+    d3.select("svg").append("g")
+        .attr("class", "xAxis")
+        .attr("transform", `translate(${margins.left}, ${chart_height + margins.top})`)
+        .call(xAxis);
 
+    
     const year_list = [...new Set(df.map(row => row.grad_cohort))].sort()
     console.log("years:", year_list)
-
+    
     let current_year_idx = 0
     
 document.addEventListener("DOMContentLoaded", () => {
@@ -222,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .attr("width", 0)
             .style("fill", row => color_scale(row.cipcode_label))
           .merge(bars)
-            .transition().duration(1000)
+            .transition().duration(2000)
             .attr("y", row => y_scale(row.cipcode_label))
             .attr("width", row => x_scale(row.total_graduates));
 
@@ -237,16 +244,22 @@ document.addEventListener("DOMContentLoaded", () => {
             .attr("y", row => y_scale(row.cipcode_label) + y_scale.bandwidth() / 2)
             .attr("x", 5)
             .attr("dy", ".35em")
-            .text(row => `${row.cipcode_label} (${row.total_graduates})`)
+            .text(row => `${row.cipcode_label} (${d3.format(",")(row.total_graduates)})`)
           .merge(labels)
-            .transition().duration(1000)
+            .transition().duration(2000)
             .attr("y", row => y_scale(row.cipcode_label) + y_scale.bandwidth() / 2)
             .attr("x", row => x_scale(row.total_graduates) + 5)
-            .text(row => `${row.cipcode_label} (${row.total_graduates})`);
+            .text(row => `${row.cipcode_label} (${d3.format(",")(row.total_graduates)})`);
 
         labels.exit().remove();
 
         year_text.text(year);
+        
+        d3.select(".xAxis")
+          .transition()
+          .duration(2000)
+          .call(xAxis);
+        
     }
 
     function run_animation() {
@@ -255,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
         draw_chart(current_year_idx);
         current_year_idx = (current_year_idx + 1) % year_list.length;
 
-        animation_timeout = setTimeout(run_animation, 1500);
+        animation_timeout = setTimeout(run_animation, 3000);
     }
 console.log(document.getElementById("pause"))
     document.getElementById("pause").addEventListener("click", () => {

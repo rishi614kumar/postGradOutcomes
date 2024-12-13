@@ -1,18 +1,5 @@
 # Interactive graph
 
-```{=html}
-<p></p>
-```
-
-Now that we’ve examined how factors like location, institution, field of study, degree level, and time influence employment outcomes, another key question has emerged - what are the most popular fields of study over time? Understanding these trends can provide valuable context for how student interests and societal demands have shifted. This can offer insights into how higher education continues to adapt to an evolving job market and world.
-
-::: {style="text-align: center; font-size: 24px; font-weight: bold;"}
-```         
-Trends in Popular Fields of Study: Graduation Counts Over Time
-```
-:::
-
-```{=html}
 <style>
   * {
     font-family: sans-serif;
@@ -47,35 +34,28 @@ button {
 }
 
 </style>
-```
 
-::::: {#plot-container}
-::: {#plot}
-:::
+Now that we’ve examined how factors like location, institution, field of study, degree level, and time influence employment outcomes, another key question has emerged - what are the most popular fields of study over time? Understanding these trends can provide valuable context for how student interests and societal demands have shifted. This can offer insights into how   higher education continues to adapt to an evolving job market and world.
 
-::: button-container
-```{=html}         
-<button id="left" type="button">⬅</button>
-<button id="pause" type="button">Pause</button>
-<button id="right" type="button">➡</button>
-```
-:::
-:::::
+<h1 style="text-align: center; font-size: 22px; font-weight: bold;">Trends in Popular Fields of Study: Graduation Counts Over Time </h1>
 
-```{=html}
+<div id="plot">
+</div>
+
+<div id="button-container">      
+  <button id="left" type="button">Backward</button>
+  <button id="pause" type="button">Pause</button>
+  <button id="right" type="button">Forward</button>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-```
 
-```{=html}
 <script src="scripts/myscript.js"></script>
-```
 
-```{=html}
 <p></p>
-```
 
-This interactive graph shows trends in the most popular fields of study based on graduation counts over time at a national level. The pause button can be clicked to pause the visualization at any displayed year. The left and right arrows will move you backward and forwards through the animation respectively. Please note that you may have to maximize your browser window to view the entire visualization.
+This interactive graph shows trends in the most popular fields of study based on graduation counts over time at a national level. The pause button can be clicked to pause the visualization at any displayed year. The left and right buttons will move you backward and forwards through the animation respectively. Please note that you may have to maximize your browser window to view the entire visualization. 
 
-These trends reflect workforce and societal demands during different periods. For example, Healthcare fields show consistency, likely due to a steady demand for medical professionals, as seen in our previous analyses as well, since healthcare is always needed. Liberal Arts/Sciences show a rise, possibly because of their broad appeal and flexibility for students who are undecided about a specific career path. The prominence of Business related fields highlights their alignment with job market demands and strong career outcomes, also how we've seen in our previous analyses. Interestingly, technology-related fields like Computer and Information Sciences show significant variation, frequently entering and leaving the top 20 until the mid 2010s. This could be because the positive perceptions of the technology industry did not have its massive increase until the mid 2010s. If our data extended into more recent years, we likely could see similar tech-related fields ranking much higher, such as fields like Data Science, since many universities have started those programs recently.
+We see more variation in the popular degrees than we would intuitively expect. This may be due to the fact that the dataset does not have complete coverage of all graduates, which might lead to sampling bias as pointed out in the data section. Still, these trends reflect a portion of the workforce and societal demands during different periods. For example, Healthcare fields show consistency, likely due to a steady demand for medical professionals, as seen in our previous analyses as well, since healthcare is always needed. The Liberal Arts/Sciences field is consistently present in the top 20, possibly because of its broad appeal and flexibility for students who are undecided about a specific career path. The same holds for Business related fields, highlighting their alignment with job market demands and strong career outcomes, also as we've seen in our previous analyses. Interestingly, technology-related fields like Computer and Information Sciences show significant variation, frequently entering and leaving the top 20. This could be because the positive perceptions of the information industry did not have its massive increase until the mid 2010s. If our data extended into more recent years, we would likely see these fields ranking much higher. Also, popular and relatively new majors, like Data Science, may not have made the top 20 because these programs did not exist yet. 
 
-Overall, prospective students should examine trends in their desired fields of study to assess job security and consistency, which have been key themes of this project. At the same time, students are encouraged to explore emerging trends highlighted in the analysis, as these can reveal opportunities in rapidly growing industries. By doing so, students can make more informed decisions about their education to position themselves for success.
+Overall, prospective students should examine trends in their desired fields of study to assess job security and consistency, which have been key themes of this project. At the same time, students are encouraged to explore emerging trends touched upon in the analysis, as these can reveal opportunities in rapidly growing industries. By doing so, students can make more informed decisions about their education to position themselves for success.
